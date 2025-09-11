@@ -1,0 +1,17 @@
+# PyTorch and CUDA
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch==2.1.2
+torchvision==0.16.2
+torchaudio==2.1.2
+
+# Hugging Face ecosystem
+# transformers==4.42.0
+accelerate
+datasets
+
+# Scientific computing
+scikit-learn
+numpy
+
+# Language model evaluation
+lm-eval
