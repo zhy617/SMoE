@@ -1,0 +1,50 @@
+import json
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
+from torch.utils.data import DataLoader, TensorDataset
+from src.qwen.analysis.expert_frequency import get_expert_frequency
+from src.qwen.analysis.expert_similarity import get_expert_similarity_matrix
+
+# --- Configuration ---
+MODEL_NAME = "Qwen/Qwen1.5-MoE-A2.7B"
+MODEL_CACHE = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B"
+CALIBRATION_DATA_PATH = "/root/SMoE/data/wikitext_calibration.json"
+BATCH_SIZE = 4 # Adjust based on GPU memory
+
+def load_calibration_data(path, batch_size):
+    """Loads the pre-processed calibration data."""
+    with open(path, 'r') as f:
+        data = json.load(f)
+    dataset = TensorDataset(torch.tensor(data, dtype=torch.long))
+    return DataLoader(dataset, batch_size=batch_size)
+
+def main():
+    print("Loading model...")
+    # device_map="auto" is crucial for multi-GPU
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_NAME,
+        cache_dir=MODEL_CACHE,
+        torch_dtype=torch.bfloat16, # Use bfloat16 for efficiency
+        device_map="auto",
+        trust_remote_code=True
+    )
+
+    print("Loading calibration data...")
+    # The dataloader gives one batch at a time, which is a tuple.
+    # We need to extract the tensor from the tuple.
+    calibration_dataloader = DataLoader(
+        TensorDataset(torch.tensor(json.load(open(CALIBRATION_DATA_PATH)), dtype=torch.long)),
+        batch_size=BATCH_SIZE
+    )
+
+    # --- 1. Calculate Expert Activation Frequency ---
+    print("\n" + "="*20 + " Calculating Expert Frequencies " + "="*20)
+    get_expert_frequency(model, calibration_dataloader)
+
+    # --- 2. Calculate Expert Similarity Matrix ---
+    print("\n" + "="*20 + " Calculating Expert Similarity " + "="*20)
+    # We can choose which expert layer's output to compare, e.g., 'up_proj' or 'down_proj'
+    get_expert_similarity_matrix(model, calibration_dataloader, target_expert_layer="up_proj")
+
+if __name__ == "__main__":
+    main()
