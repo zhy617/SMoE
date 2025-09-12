@@ -13,4 +13,6 @@ source .venv/bin/activate
 ```bash
 pip install -r requirements.txt
 pip install git+https://github.com/huggingface/transformers
+cd lm-evaluation-harness
+pip install -e .
 ```
