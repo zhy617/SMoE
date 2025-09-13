@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from transformers import Qwen2MoeForCausalLM
-from transformers.models.qwen2_moe.modeling_qwen2_moe import Qwen2MoeDecoderLayer
+from transformers.models.qwen2_moe.modeling_qwen2_moe import Qwen2MoeDecoderLayer, Qwen2MoeMLP, Qwen2MoeSparseMoeBlock
 from typing import List, Tuple, Dict, cast, Optional, Union
 import os
 
@@ -75,13 +75,20 @@ def generate_and_save_hidden_states(
 
 
 
-def analyze_similarity_from_saved_states(
+def get_expert_activation_from_saved_states(
     model: Qwen2MoeForCausalLM, # 仍然需要模型来访问专家权重
     saved_states_dir: str,
     target_moe_layer_idx: int
-) -> Tuple[torch.Tensor, torch.Tensor]:
+) -> torch.Tensor:
     """
-    从磁盘加载预存的 hidden_states，并执行专家相似度分析。
+    input:
+        model: 已加载的 Qwen2MoeForCausalLM 模型。Qwen1.5-MoE-A2.7B
+        saved_states_dir: 之前保存 hidden_states 的目录路径。
+        target_moe_layer_idx: 目标 MoE 层的索引。
+    output:
+        expert_activations: 形状为 (num_experts, seq_len, hidden_size) 的张量，包含每个专家对输入序列的激活输出。
+    读取之前保存的 hidden_states，手动执行 LayerNorm 和专家前向传播，返回专家激活。
+    单个样本的分析。
     """
     print(f"\n--- Analyzing from saved states for layer {target_moe_layer_idx} ---")
     
@@ -97,8 +104,8 @@ def analyze_similarity_from_saved_states(
 
     # --- 3. 手动遍历专家 (与之前相同) ---
     moe_block = target_layer.mlp
-    if "Moe" not in moe_block.__class__.__name__:
-        raise TypeError(f"Layer {target_moe_layer_idx} is not a MoE layer.")
+    if isinstance(moe_block, Qwen2MoeMLP):
+        raise ValueError(f"Layer {target_moe_layer_idx} is not a MoE layer.")
 
     num_experts = len(moe_block.experts)
     expert_outputs: List[torch.Tensor] = []
@@ -110,15 +117,62 @@ def analyze_similarity_from_saved_states(
             expert_outputs.append(output)
 
     stacked_expert_outputs = torch.stack(expert_outputs)
+    return stacked_expert_outputs
 
-    # --- 4. 计算相似度 (与之前相同) ---
-    expert_representations = stacked_expert_outputs.mean(dim=[1, 2])
-    normalized_representations = F.normalize(expert_representations, p=2, dim=1)
-    similarity_matrix = torch.matmul(normalized_representations, normalized_representations.T)
 
-    print("\n--- Final Result: Expert Similarity Matrix ---")
+def calculate_expert_similarity_matrix(expert_activations: torch.Tensor) -> torch.Tensor:
+    """
+    根据论文公式计算专家间的相似度矩阵：
+    Sim(Ei, Ej) = (1/m) * Σ(Ei(xl) · Ej(xl) / (||Ei(xl)|| * ||Ej(xl)||))
+    
+    Args:
+        expert_activations: 形状为 (num_experts, batch_size, seq_len, hidden_dim) 的专家激活张量
+        
+    Returns:
+        similarity_matrix: 形状为 (num_experts, num_experts) 的相似度矩阵
+    """
+    num_experts = expert_activations.shape[0]
+    batch_size, seq_len, hidden_dim = expert_activations.shape[1], expert_activations.shape[2], expert_activations.shape[3]
+    
+    # 将专家激活重塑为 (num_experts, m, hidden_dim)，其中 m = batch_size * seq_len
+    # 这样每个 token 对应公式中的一个 x_l
+    expert_activations_reshaped = expert_activations.view(num_experts, batch_size * seq_len, hidden_dim)
+    m = expert_activations_reshaped.shape[1]  # 总 token 数
+    
+    print(f"  - Computing similarity for {num_experts} experts across {m} tokens")
+    
+    # 初始化相似度矩阵
+    similarity_matrix = torch.zeros(num_experts, num_experts, device=expert_activations.device)
+    
+    # 计算每一对专家的相似度
+    for i in range(num_experts):
+        for j in range(num_experts):
+            if i == j:
+                # 专家与自身的相似度为1
+                similarity_matrix[i, j] = 1.0
+            else:
+                # Ei(xl) 和 Ej(xl) 分别是专家i和j对所有token的输出
+                expert_i_outputs = expert_activations_reshaped[i]  # (m, hidden_dim)
+                expert_j_outputs = expert_activations_reshaped[j]  # (m, hidden_dim)
+                
+                # 计算每个token的点积：Ei(xl) · Ej(xl)
+                dot_products = torch.sum(expert_i_outputs * expert_j_outputs, dim=1)  # (m,)
+                
+                # 计算每个token的L2范数：||Ei(xl)||, ||Ej(xl)||
+                norms_i = torch.norm(expert_i_outputs, p=2, dim=1)  # (m,)
+                norms_j = torch.norm(expert_j_outputs, p=2, dim=1)  # (m,)
+                
+                # 避免除零，添加小的epsilon
+                epsilon = 1e-8
+                cosine_similarities = dot_products / (norms_i * norms_j + epsilon)  # (m,)
+                
+                # 计算平均余弦相似度：(1/m) * Σ cosine_similarity
+                avg_cosine_similarity = torch.mean(cosine_similarities)
+                similarity_matrix[i, j] = avg_cosine_similarity
+    
+    print("\n--- Expert Similarity Matrix (Average Cosine Similarity) ---")
     torch.set_printoptions(precision=4, sci_mode=False)
-    print(similarity_matrix)
+    # print(similarity_matrix)
     torch.set_printoptions(profile="default")
-
-    return similarity_matrix, stacked_expert_outputs
+    
+    return similarity_matrix
