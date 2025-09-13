@@ -17,3 +17,13 @@
 - 有没有关于项目结构的建议？因为我现在是按照 gemini 的项目结构来组织的，但不确定是否适合这个项目。
 
   现在还只是针对 qwen 1.5 的实验，后续可能会有更多模型和数据集，想问下项目结构方面有没有建议。
+
+## 9.13
+### Done
+- 参考 plh 师兄的建议，修改了方法，先 prefill 一次，保存每层的 hidden states，然后再手动执行到指定层，计算激活频率和相似度
+- 翻阅 transformers.models.qwen2_moe.modeling_qwen2_moe，理解 Qwen2MoeDecoderLayer 的实现，并仿照 forward 方法，手动实现了 attention 和 mlp 的计算
+- 成功保存了每层的 hidden states
+- 计算激活频率和相似度 (实现中，较简单)
+
+### Questions
+- None

@@ -2,7 +2,7 @@
 # PyTorch core, cu121 version matches perfectly with CUDA 12.1 in our Dockerfile
 torch==2.3.1 --extra-index-url https://download.pytorch.org/whl/cu121
 # Hugging Face ecosystem core
-transformers==4.42.3
+transformers==4.56.1
 # Efficient tokenizer
 tokenizers==0.19.1
 # For loading and processing datasets

@@ -27,3 +27,9 @@ bash script/download_model.sh
 
 bash script/prepare_data.sh # it takes 1-2 mins
 ```
+
+## Run
+### Qwen1.5-MoE-A2.7B
+```bash
+python -m src.qwen.analysis.run_qwen_analysis
+```
