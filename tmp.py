@@ -1,252 +1,293 @@
-import torch
-import torch.nn.functional as F
-from transformers import Qwen2ForCausalLM
-from typing import List, Tuple, Dict
-import os
+# ...existing code...
 
-def generate_and_save_hidden_states(
-    model: Qwen2ForCausalLM,
-    input_ids: torch.Tensor,
-    save_dir: str
-) -> None:
+from transformers import Qwen2MoeForCausalLM
+
+def merge_model_experts(
+    model: Qwen2MoeForCausalLM,
+    cluster_dir: str,
+    result_dir: str,
+    target_layers: List[int],
+    merging_method: str = "svd"
+) -> Qwen2MoeForCausalLM:
     """
-    执行一次前向传播，并将每一层的输出 hidden_states 保存到磁盘。
-    """
-    model.eval()
-    os.makedirs(save_dir, exist_ok=True)
+    合并整个模型中指定层的专家
     
-    # 保存输入
-    torch.save(input_ids.cpu(), os.path.join(save_dir, "input_ids.pt"))
-
-    with torch.no_grad():
-        # 获取词嵌入
-        hidden_states = model.model.embed_tokens(input_ids.to(model.device))
-        torch.save(hidden_states.cpu(), os.path.join(save_dir, "hidden_states_embedding.pt"))
-
-        # 逐层执行并保存
-        for i, layer in enumerate(model.model.layers):
-            print(f"  - Processing and saving output of layer {i}...")
-            layer_outputs = layer(hidden_states, use_cache=False)
-            hidden_states = layer_outputs[0]
-            torch.save(hidden_states.cpu(), os.path.join(save_dir, f"hidden_states_layer_{i}.pt"))
-    
-    print(f"\nAll intermediate hidden states saved to '{save_dir}'.")
-
-
-def analyze_similarity_from_saved_states(
-    model: Qwen2ForCausalLM, # 仍然需要模型来访问专家权重
-    saved_states_dir: str,
-    target_moe_layer_idx: int
-) -> Tuple[torch.Tensor, torch.Tensor]:
+    Args:
+        model: 原始模型
+        cluster_dir: 聚类结果目录
+        result_dir: 分析结果目录（用于加载激活频率）
+        target_layers: 要合并的层列表
+        merging_method: 合并方法 ("svd" 或 "frequency")
+        
+    Returns:
+        merged_model: 合并后的模型
     """
-    从磁盘加载预存的 hidden_states，并执行专家相似度分析。
-    """
-    print(f"\n--- Analyzing from saved states for layer {target_moe_layer_idx} ---")
+    print(f"Starting expert merging for {len(target_layers)} layers...")
+    print(f"Target layers: {target_layers}")
+    print(f"Merging method: {merging_method}")
     
-    # --- 1. 加载目标层之前的 hidden_states ---
-    # 我们需要进入MoE块的输入，它是在前一层输出的基础上经过一个LayerNorm得到的
-    # 因此，我们加载 target_moe_layer_idx - 1 层的输出
-    if target_moe_layer_idx > 0:
-        pre_layer_path = os.path.join(saved_states_dir, f"hidden_states_layer_{target_moe_layer_idx - 1}.pt")
-        hidden_states = torch.load(pre_layer_path).to(model.device)
-    else: # 如果目标是第0层
-        embedding_path = os.path.join(saved_states_dir, "hidden_states_embedding.pt")
-        hidden_states = torch.load(embedding_path).to(model.device)
+    # 创建模型副本
+    merged_model = copy.deepcopy(model)
+    
+    # 统计信息
+    merge_stats = {
+        'total_layers_processed': 0,
+        'total_experts_before': 0,
+        'total_experts_after': 0,
+        'layer_details': {}
+    }
+    
+    for layer_idx in target_layers:
+        print(f"\n{'='*50}")
+        print(f"Processing layer {layer_idx}...")
+        
+        # 检查是否为MoE层
+        layer = merged_model.model.layers[layer_idx]
+        if not isinstance(layer.mlp, Qwen2MoeSparseMoeBlock):
+            print(f"  ⚠️  Layer {layer_idx} is not a MoE layer, skipping...")
+            continue
+        
+        try:
+            # 记录合并前的专家数量
+            experts_before = len(layer.mlp.experts)
+            merge_stats['total_experts_before'] += experts_before
+            
+            # 加载聚类结果和激活频率
+            print(f"  📂 Loading clustering results for layer {layer_idx}...")
+            cluster_labels, cluster_info = load_clustering_results(cluster_dir, layer_idx)
+            
+            print(f"  📂 Loading activation frequencies for layer {layer_idx}...")
+            expert_frequencies = load_activation_frequency(result_dir, layer_idx)
+            
+            print(f"  🔍 Layer {layer_idx} info:")
+            print(f"     - Experts before: {experts_before}")
+            print(f"     - Target clusters: {cluster_info['n_clusters']}")
+            print(f"     - Cluster sizes: {cluster_info['cluster_sizes']}")
+            
+            # 合并专家
+            print(f"  🔄 Merging experts using {merging_method} method...")
+            merged_moe = merge_experts_in_moe_layer(
+                layer.mlp, 
+                cluster_labels, 
+                expert_frequencies,
+                merging_method
+            )
+            
+            # 替换层
+            layer.mlp = merged_moe
+            
+            # 记录合并后的专家数量
+            experts_after = len(merged_moe.experts)
+            merge_stats['total_experts_after'] += experts_after
+            merge_stats['total_layers_processed'] += 1
+            
+            # 记录层级详细信息
+            merge_stats['layer_details'][layer_idx] = {
+                'experts_before': experts_before,
+                'experts_after': experts_after,
+                'compression_ratio': experts_before / experts_after if experts_after > 0 else float('inf'),
+                'cluster_sizes': cluster_info['cluster_sizes']
+            }
+            
+            print(f"  ✅ Layer {layer_idx} merged successfully: {experts_before} -> {experts_after} experts")
+            print(f"     Compression ratio: {experts_before/experts_after:.2f}x")
+            
+        except FileNotFoundError as e:
+            print(f"  ❌ Error: Missing required files for layer {layer_idx}")
+            print(f"     {str(e)}")
+            continue
+            
+        except Exception as e:
+            print(f"  ❌ Error processing layer {layer_idx}: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            continue
+    
+    # 打印总结统计
+    print(f"\n{'='*60}")
+    print("🎉 EXPERT MERGING SUMMARY")
+    print(f"{'='*60}")
+    print(f"✅ Successfully processed layers: {merge_stats['total_layers_processed']}/{len(target_layers)}")
+    print(f"📊 Total experts before merging: {merge_stats['total_experts_before']}")
+    print(f"📊 Total experts after merging: {merge_stats['total_experts_after']}")
+    
+    if merge_stats['total_experts_before'] > 0:
+        overall_compression = merge_stats['total_experts_before'] / merge_stats['total_experts_after']
+        print(f"🎯 Overall compression ratio: {overall_compression:.2f}x")
+        print(f"💾 Model size reduction: {((merge_stats['total_experts_before'] - merge_stats['total_experts_after']) / merge_stats['total_experts_before']) * 100:.1f}%")
+    
+    print(f"\nPer-layer details:")
+    for layer_idx, details in merge_stats['layer_details'].items():
+        print(f"  Layer {layer_idx}: {details['experts_before']} -> {details['experts_after']} experts ({details['compression_ratio']:.2f}x)")
+    
+    return merged_model
 
-    # --- 2. 手动执行 LayerNorm ---
-    target_layer = model.model.layers[target_moe_layer_idx]
-    pre_moe_hidden_states = target_layer.post_attention_layernorm(hidden_states)
-    print(f"  - Shape of loaded and normed hidden states: {pre_moe_hidden_states.shape}")
-
-    # --- 3. 手动遍历专家 (与之前相同) ---
-    moe_block = target_layer.mlp
-    num_experts = len(moe_block.experts)
-    expert_outputs: List[torch.Tensor] = []
-
-    with torch.no_grad():
-        for i in range(num_experts):
-            expert = moe_block.experts[i]
-            output = expert(pre_moe_hidden_states)
-            expert_outputs.append(output)
-
-    stacked_expert_outputs = torch.stack(expert_outputs)
-
-    # --- 4. 计算相似度 (与之前相同) ---
-    expert_representations = stacked_expert_outputs.mean(dim=[1, 2])
-    normalized_representations = F.normalize(expert_representations, p=2, dim=1)
-    similarity_matrix = torch.matmul(normalized_representations, normalized_representations.T)
-
-    print("\n--- Final Result: Expert Similarity Matrix ---")
-    torch.set_printoptions(precision=4, sci_mode=False)
-    print(similarity_matrix)
-    torch.set_printoptions(profile="default")
-
-    return similarity_matrix, stacked_expert_outputs
-```
-
-### 更新后的主脚本 `run_qwen_analysis.py`
-
-```python
-# filepath: scripts/analysis/run_qwen_analysis.py
-# ... imports ...
-from src.qwen.analysis.direct_expert_similarity import (
-    generate_and_save_hidden_states,
-    analyze_similarity_from_saved_states
-)
-
-# ... config ...
-HIDDEN_STATES_SAVE_DIR = "/root/SMoE/data/hidden_states_cache/sample_0"
+def save_merged_model(
+    merged_model: Qwen2MoeForCausalLM,
+    tokenizer,  # 添加分词器参数
+    output_dir: str,
+    model_name: str = "merged_model",
+    save_config: bool = True
+) -> str:
+    """
+    保存合并后的模型
+    
+    Args:
+        merged_model: 合并后的模型
+        tokenizer: 分词器
+        output_dir: 输出目录
+        model_name: 模型名称
+        save_config: 是否保存配置信息
+        
+    Returns:
+        model_path: 保存的模型路径
+    """
+    model_path = os.path.join(output_dir, model_name)
+    os.makedirs(model_path, exist_ok=True)
+    
+    print(f"\n{'='*50}")
+    print("💾 SAVING MERGED MODEL")
+    print(f"{'='*50}")
+    print(f"📁 Output directory: {model_path}")
+    
+    try:
+        # 保存模型
+        print("🔄 Saving model weights and configuration...")
+        merged_model.save_pretrained(
+            model_path,
+            safe_serialization=True,  # 使用SafeTensors格式
+            max_shard_size="2GB"      # 分片大小
+        )
+        
+        # 保存分词器
+        if tokenizer is not None:
+            print("🔄 Saving tokenizer...")
+            tokenizer.save_pretrained(model_path)
+        
+        # 保存额外的配置信息
+        if save_config:
+            print("🔄 Saving merge configuration...")
+            merge_info = {
+                "merge_timestamp": str(torch.datetime.now()),
+                "original_model_type": "Qwen2MoeForCausalLM",
+                "merged_layers": [],  # 这个可以在调用时填充
+                "merging_method": "svd",
+                "total_parameters": sum(p.numel() for p in merged_model.parameters()),
+                "trainable_parameters": sum(p.numel() for p in merged_model.parameters() if p.requires_grad),
+            }
+            
+            # 统计每层的专家数量
+            moe_layer_info = {}
+            for i, layer in enumerate(merged_model.model.layers):
+                if isinstance(layer.mlp, Qwen2MoeSparseMoeBlock):
+                    moe_layer_info[f"layer_{i}"] = {
+                        "num_experts": len(layer.mlp.experts),
+                        "is_moe_layer": True
+                    }
+                else:
+                    moe_layer_info[f"layer_{i}"] = {
+                        "is_moe_layer": False
+                    }
+            
+            merge_info["moe_layers_info"] = moe_layer_info
+            
+            config_path = os.path.join(model_path, "merge_info.json")
+            with open(config_path, 'w') as f:
+                json.dump(merge_info, f, indent=2, default=str)
+            
+            print(f"📝 Merge configuration saved to: {config_path}")
+        
+        # 验证保存是否成功
+        print("🔍 Validating saved model...")
+        saved_files = os.listdir(model_path)
+        required_files = ['config.json']
+        
+        missing_files = [f for f in required_files if f not in saved_files]
+        if missing_files:
+            print(f"⚠️  Warning: Missing files: {missing_files}")
+        else:
+            print("✅ All required files saved successfully!")
+        
+        # 计算模型大小
+        total_size = sum(os.path.getsize(os.path.join(model_path, f)) 
+                        for f in saved_files if os.path.isfile(os.path.join(model_path, f)))
+        size_gb = total_size / (1024**3)
+        
+        print(f"📊 Model statistics:")
+        print(f"   - Total parameters: {sum(p.numel() for p in merged_model.parameters()):,}")
+        print(f"   - Model size on disk: {size_gb:.2f} GB")
+        print(f"   - Number of files: {len(saved_files)}")
+        
+        print(f"✅ Model successfully saved to: {model_path}")
+        return model_path
+        
+    except Exception as e:
+        print(f"❌ Error saving model: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise
 
 def main():
-    # ... 加载模型和数据 ...
-    # sample_input_ids = ...
-
-    # --- 步骤 1: 生成并保存中间结果 (如果尚未保存) ---
-    # 这一步只需要运行一次
-    if not os.path.exists(HIDDEN_STATES_SAVE_DIR) or not os.listdir(HIDDEN_STATES_SAVE_DIR):
-        print("="*20 + " Generating and saving hidden states... " + "="*20)
-        generate_and_save_hidden_states(model, sample_input_ids, HIDDEN_STATES_SAVE_DIR)
-    else:
-        print(f"Hidden states already found in '{HIDDEN_STATES_SAVE_DIR}'. Skipping generation.")
-
-    # --- 步骤 2: 从保存的结果进行分析 ---
-    # 这一步可以反复运行，分析不同的层，速度很快
-    print("\n" + "="*20 + " Analyzing Layer 1 from saved states... " + "="*20)
-    analyze_similarity_from_saved_states(model, HIDDEN_STATES_SAVE_DIR, target_moe_layer_idx=1)
+    """主函数：执行专家合并"""
+    # 配置参数
+    MODEL_PATH = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B"
+    CLUSTER_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results"  # 聚类结果存放位置
+    RESULT_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results"   # 激活频率存放位置
+    OUTPUT_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/merged_models"
     
-    print("\n" + "="*20 + " Analyzing Layer 3 from saved states... " + "="*20)
-    analyze_similarity_from_saved_states(model, HIDDEN_STATES_SAVE_DIR, target_moe_layer_idx=3)
+    # 要合并的MoE层 (Qwen1.5-MoE的MoE层通常是奇数层)
+    TARGET_LAYERS = [1, 3, 5, 7, 9]  
+    MERGING_METHOD = "svd"  # 可选: "svd" 或 "frequency"
     
-    # 你甚至可以在这里卸载模型，然后只用CPU进行其他分析（如果不需要访问专家权重）
+    try:
+        print("🚀 Starting Expert Merging Pipeline")
+        print(f"{'='*60}")
+        
+        # 加载原始模型和分词器
+        print("📂 Loading original model and tokenizer...")
+        from transformers import AutoTokenizer
+        
+        model = Qwen2MoeForCausalLM.from_pretrained(
+            MODEL_PATH,
+            torch_dtype=torch.bfloat16,
+            device_map="cpu",  # 在CPU上进行合并以节省显存
+            trust_remote_code=True
+        )
+        
+        tokenizer = AutoTokenizer.from_pretrained(
+            MODEL_PATH,
+            trust_remote_code=True
+        )
+        
+        print(f"✅ Model loaded: {type(model).__name__}")
+        print(f"✅ Tokenizer loaded: {type(tokenizer).__name__}")
+        
+        # 执行专家合并
+        merged_model = merge_model_experts(
+            model=model,
+            cluster_dir=CLUSTER_DIR,
+            result_dir=RESULT_DIR,
+            target_layers=TARGET_LAYERS,
+            merging_method=MERGING_METHOD
+        )
+        
+        # 保存合并后的模型
+        model_name = f"qwen1.5_moe_merged_{MERGING_METHOD}_layers_{'_'.join(map(str, TARGET_LAYERS))}"
+        saved_path = save_merged_model(
+            merged_model=merged_model,
+            tokenizer=tokenizer,
+            output_dir=OUTPUT_DIR,
+            model_name=model_name
+        )
+        
+        print(f"\n🎉 Expert merging pipeline completed successfully!")
+        print(f"🎯 Merged model saved to: {saved_path}")
+        
+    except Exception as e:
+        print(f"💥 Fatal error during merging: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
 
 if __name__ == "__main__":
     main()
-```
-
-这个重构后的工作流更加强大和高效，完全体现了你提出的优化思路。# filepath: /root/SMoE/src/qwen/analysis/direct_expert_similarity.py
-import torch
-import torch.nn.functional as F
-from transformers import Qwen2ForCausalLM
-from typing import List, Tuple, Dict
-import os
-
-def generate_and_save_hidden_states(
-    model: Qwen2ForCausalLM,
-    input_ids: torch.Tensor,
-    save_dir: str
-) -> None:
-    """
-    执行一次前向传播，并将每一层的输出 hidden_states 保存到磁盘。
-    """
-    model.eval()
-    os.makedirs(save_dir, exist_ok=True)
-    
-    # 保存输入
-    torch.save(input_ids.cpu(), os.path.join(save_dir, "input_ids.pt"))
-
-    with torch.no_grad():
-        # 获取词嵌入
-        hidden_states = model.model.embed_tokens(input_ids.to(model.device))
-        torch.save(hidden_states.cpu(), os.path.join(save_dir, "hidden_states_embedding.pt"))
-
-        # 逐层执行并保存
-        for i, layer in enumerate(model.model.layers):
-            print(f"  - Processing and saving output of layer {i}...")
-            layer_outputs = layer(hidden_states, use_cache=False)
-            hidden_states = layer_outputs[0]
-            torch.save(hidden_states.cpu(), os.path.join(save_dir, f"hidden_states_layer_{i}.pt"))
-    
-    print(f"\nAll intermediate hidden states saved to '{save_dir}'.")
-
-
-def analyze_similarity_from_saved_states(
-    model: Qwen2ForCausalLM, # 仍然需要模型来访问专家权重
-    saved_states_dir: str,
-    target_moe_layer_idx: int
-) -> Tuple[torch.Tensor, torch.Tensor]:
-    """
-    从磁盘加载预存的 hidden_states，并执行专家相似度分析。
-    """
-    print(f"\n--- Analyzing from saved states for layer {target_moe_layer_idx} ---")
-    
-    # --- 1. 加载目标层之前的 hidden_states ---
-    # 我们需要进入MoE块的输入，它是在前一层输出的基础上经过一个LayerNorm得到的
-    # 因此，我们加载 target_moe_layer_idx - 1 层的输出
-    if target_moe_layer_idx > 0:
-        pre_layer_path = os.path.join(saved_states_dir, f"hidden_states_layer_{target_moe_layer_idx - 1}.pt")
-        hidden_states = torch.load(pre_layer_path).to(model.device)
-    else: # 如果目标是第0层
-        embedding_path = os.path.join(saved_states_dir, "hidden_states_embedding.pt")
-        hidden_states = torch.load(embedding_path).to(model.device)
-
-    # --- 2. 手动执行 LayerNorm ---
-    target_layer = model.model.layers[target_moe_layer_idx]
-    pre_moe_hidden_states = target_layer.post_attention_layernorm(hidden_states)
-    print(f"  - Shape of loaded and normed hidden states: {pre_moe_hidden_states.shape}")
-
-    # --- 3. 手动遍历专家 (与之前相同) ---
-    moe_block = target_layer.mlp
-    num_experts = len(moe_block.experts)
-    expert_outputs: List[torch.Tensor] = []
-
-    with torch.no_grad():
-        for i in range(num_experts):
-            expert = moe_block.experts[i]
-            output = expert(pre_moe_hidden_states)
-            expert_outputs.append(output)
-
-    stacked_expert_outputs = torch.stack(expert_outputs)
-
-    # --- 4. 计算相似度 (与之前相同) ---
-    expert_representations = stacked_expert_outputs.mean(dim=[1, 2])
-    normalized_representations = F.normalize(expert_representations, p=2, dim=1)
-    similarity_matrix = torch.matmul(normalized_representations, normalized_representations.T)
-
-    print("\n--- Final Result: Expert Similarity Matrix ---")
-    torch.set_printoptions(precision=4, sci_mode=False)
-    print(similarity_matrix)
-    torch.set_printoptions(profile="default")
-
-    return similarity_matrix, stacked_expert_outputs
-```
-
-### 更新后的主脚本 `run_qwen_analysis.py`
-
-```python
-# filepath: scripts/analysis/run_qwen_analysis.py
-# ... imports ...
-from src.qwen.analysis.direct_expert_similarity import (
-    generate_and_save_hidden_states,
-    analyze_similarity_from_saved_states
-)
-
-# ... config ...
-HIDDEN_STATES_SAVE_DIR = "/root/SMoE/data/hidden_states_cache/sample_0"
-
-def main():
-    # ... 加载模型和数据 ...
-    # sample_input_ids = ...
-
-    # --- 步骤 1: 生成并保存中间结果 (如果尚未保存) ---
-    # 这一步只需要运行一次
-    if not os.path.exists(HIDDEN_STATES_SAVE_DIR) or not os.listdir(HIDDEN_STATES_SAVE_DIR):
-        print("="*20 + " Generating and saving hidden states... " + "="*20)
-        generate_and_save_hidden_states(model, sample_input_ids, HIDDEN_STATES_SAVE_DIR)
-    else:
-        print(f"Hidden states already found in '{HIDDEN_STATES_SAVE_DIR}'. Skipping generation.")
-
-    # --- 步骤 2: 从保存的结果进行分析 ---
-    # 这一步可以反复运行，分析不同的层，速度很快
-    print("\n" + "="*20 + " Analyzing Layer 1 from saved states... " + "="*20)
-    analyze_similarity_from_saved_states(model, HIDDEN_STATES_SAVE_DIR, target_moe_layer_idx=1)
-    
-    print("\n" + "="*20 + " Analyzing Layer 3 from saved states... " + "="*20)
-    analyze_similarity_from_saved_states(model, HIDDEN_STATES_SAVE_DIR, target_moe_layer_idx=3)
-    
-    # 你甚至可以在这里卸载模型，然后只用CPU进行其他分析（如果不需要访问专家权重）
-
-if __name__ == "__main__":
-    main()
-```
-
-这个重构后的工作流更加强大和高效，完全体现了你提出的优化思路。

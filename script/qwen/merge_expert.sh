@@ -1,0 +1,1 @@
+python -m src.qwen.compress.merge_experts

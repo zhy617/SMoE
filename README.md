@@ -43,3 +43,11 @@ bash script/qwen/calculate_simi_freq.sh
 # output: fsas/zhanghongyu/SMoE/qwen/analysis/kmeans_clusters_{N}
 bash script/qwen/kmeans_cluster.sh
 ```
+
+```bash
+# merge experts
+# input: fsas/zhanghongyu/SMoE/qwen/analysis/kmeans_clusters_{N}
+#        fsas/zhanghongyu/SMoE/qwen/analysis
+# output: fsas/zhanghongyu/SMoE/qwen/merged_models
+bash script/qwen/merge_expert.sh
+```
