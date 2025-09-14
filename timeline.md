@@ -27,3 +27,13 @@
 
 ### Questions
 - None
+
+## 9.14
+### Done
+- 完成了激活频率和相似度的计算
+- 实现了 kmeans 聚类
+- 实现了专家合并：SVD 
+- 保存了合并后的模型
+
+### Questions
+- None
