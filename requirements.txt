@@ -31,6 +31,8 @@ virtualenv==20.26.2
 numpy==1.26.4
 # For processing CSV or other tabular data if needed
 pandas==2.2.2
+# sklearn for clustering and other ML algorithms
+scikit-learn==1.7.2
 
 # --- Jupyter & Notebook Support ---
 # Core package for executing notebook code cells in VS Code

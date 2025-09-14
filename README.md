@@ -31,5 +31,15 @@ bash script/prepare_data.sh # it takes 1-2 mins
 ## Run
 ### Qwen1.5-MoE-A2.7B
 ```bash
-python -m src.qwen.analysis.run_qwen_analysis
+# calculate expert similarity and frequency
+# intermediate result dir: fsas/zhanghongyu/SMoE/qwen/hidden_states_cache
+# analysis result dir: fsas/zhanghongyu/SMoE/qwen/analysis
+bash script/qwen/calculate_simi_freq.sh
+```
+
+```bash
+# kmeans cluster
+# input: fsas/zhanghongyu/SMoE/qwen/analysis/similarity_results
+# output: fsas/zhanghongyu/SMoE/qwen/analysis/kmeans_clusters_{N}
+bash script/qwen/kmeans_cluster.sh
 ```
