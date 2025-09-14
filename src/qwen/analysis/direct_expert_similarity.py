@@ -176,3 +176,49 @@ def calculate_expert_similarity_matrix(expert_activations: torch.Tensor) -> torc
     torch.set_printoptions(profile="default")
     
     return similarity_matrix
+
+
+def calculate_expert_activation_frequency(
+    saved_states_dir: str,
+    target_moe_layer_idx: int,
+    top_k: int = 2
+) -> Optional[torch.Tensor]:
+    """
+    从保存的router logits计算专家激活频率。
+    
+    Args:
+        saved_states_dir: 保存hidden states和router logits的目录
+        target_moe_layer_idx: 目标MoE层的索引
+        top_k: 每个token激活的专家数量 (对于Qwen1.5-MoE通常是2)
+        
+    Returns:
+        activation_counts: 形状为(num_experts,)的张量，记录每个专家被激活的次数
+    """
+    print(f"\n--- Calculating expert activation frequency for layer {target_moe_layer_idx} ---")
+    
+    # 加载router logits
+    router_logits_path = os.path.join(saved_states_dir, f"router_logits_layer_{target_moe_layer_idx}.pt")
+    
+    if not os.path.exists(router_logits_path):
+        print(f"Warning: Router logits file not found at {router_logits_path}")
+        return None
+        
+    router_logits: torch.Tensor = torch.load(router_logits_path)  # 形状: (batch_size, seq_len, num_experts)
+    
+    print(f"  - Router logits shape: {router_logits.shape}")
+    
+    # 获取top-k专家的索引
+    top_k_indices = torch.topk(router_logits, k=top_k, dim=-1).indices  # (batch_size, seq_len, top_k)
+    
+    # 展平为一维，统计每个专家被选中的次数
+    flat_indices = top_k_indices.flatten()  # (batch_size * seq_len * top_k,)
+    num_experts = router_logits.shape[-1]
+    
+    # 统计激活频率
+    activation_counts = torch.bincount(flat_indices, minlength=num_experts)
+    
+    print(f"  - Total tokens: {router_logits.shape[0] * router_logits.shape[1]}")
+    print(f"  - Expert activation counts shape: {activation_counts.shape}")
+    print(f"  - Top 10 most activated experts: {torch.topk(activation_counts, k=10)}")
+    
+    return activation_counts

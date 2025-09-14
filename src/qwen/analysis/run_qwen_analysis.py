@@ -10,6 +10,7 @@ from .direct_expert_similarity import (
     generate_and_save_hidden_states,
     get_expert_activation_from_saved_states,
     calculate_expert_similarity_matrix,
+    calculate_expert_activation_frequency,
 )
 
 # ... config ...
@@ -103,6 +104,68 @@ def main() -> None:
             print(f"Warning: No valid samples processed for layer {layer_idx}")
     
     print(f"\nAll results saved to: {results_dir}")
+    
+    # --- 步骤 4: 计算专家激活频率 ---
+    print("\n" + "="*20 + " Step 4: Computing expert activation frequency " + "="*20)
+    
+    results_dir = os.path.join(RESULT_DIR, "activation_frequency_results")
+    os.makedirs(results_dir, exist_ok=True)
+
+    # 为每一层统计激活频率
+    total_activation_counts = {layer_idx: torch.zeros(60, dtype=torch.long) for layer_idx in layers_to_analyze}
+    
+    for i in tqdm(range(num_samples), desc="Computing activation frequency"):
+        sample_save_dir = os.path.join(BASE_HIDDEN_STATES_DIR, f"sample_{i}")
+        
+        for layer_idx in layers_to_analyze:
+            try:
+                # 计算该样本在该层的专家激活频率
+                activation_counts = calculate_expert_activation_frequency(
+                    sample_save_dir,
+                    target_moe_layer_idx=layer_idx,
+                    top_k=2  # Qwen1.5-MoE每个token激活2个专家
+                )
+                
+                if activation_counts is not None:
+                    total_activation_counts[layer_idx] += activation_counts.cpu()
+                    
+            except Exception as e:
+                print(f"Warning: Failed to compute activation frequency for sample {i} layer {layer_idx}: {e}")
+                continue
+    
+    # 保存和显示激活频率结果
+    for layer_idx, total_counts in total_activation_counts.items():
+        if total_counts.sum() > 0:
+            # 计算激活频率百分比
+            activation_percentages = (total_counts.float() / total_counts.sum()) * 100
+            
+            print(f"\n--- Expert Activation Frequency for MoE Layer {layer_idx} ---")
+            print(f"Total activations: {total_counts.sum().item()}")
+            
+            # 显示最活跃和最不活跃的专家
+            top_10_experts = torch.topk(activation_percentages, k=10)
+            bottom_10_experts = torch.topk(activation_percentages, k=10, largest=False)
+            
+            print("Top 10 most activated experts:")
+            for i, (expert_idx, percentage) in enumerate(zip(top_10_experts.indices, top_10_experts.values)):
+                print(f"  Expert {expert_idx.item()}: {percentage.item():.2f}%")
+                
+            print("Top 10 least activated experts:")
+            for i, (expert_idx, percentage) in enumerate(zip(bottom_10_experts.indices, bottom_10_experts.values)):
+                print(f"  Expert {expert_idx.item()}: {percentage.item():.2f}%")
+            
+            # 保存激活频率数据
+            freq_result_path = os.path.join(results_dir, f"activation_frequency_layer_{layer_idx}.pt")
+            torch.save({
+                'activation_counts': total_counts,
+                'activation_percentages': activation_percentages,
+                'total_samples': num_samples
+            }, freq_result_path)
+            print(f"Saved activation frequency data for layer {layer_idx} to {freq_result_path}")
+        else:
+            print(f"Warning: No activation data found for layer {layer_idx}")
+    
+    print(f"\nAll activation frequency results saved to: {results_dir}")
 
 if __name__ == "__main__":
     main()
