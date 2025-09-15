@@ -10,6 +10,15 @@ python3 -m venv .venv
 
 source .venv/bin/activate
 ```
+### Troubleshooting
+```bash
+# 重建虚拟环境（终极方案）
+deactivate
+rm -rf .venv
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
 ## Install
 ```bash
@@ -60,3 +69,5 @@ bash script/qwen/merge_expert.sh
 # evaluate merged model
 # input: fsas/zhanghongyu/SMoE/qwen/merged_models
 # output: fsas/zhanghongyu/SMoE/qwen/eval_results
+bash script/qwen/evaluate_benchmark.sh
+```
