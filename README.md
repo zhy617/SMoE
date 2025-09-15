@@ -1,6 +1,7 @@
 # SMoE
 > [Sub-MoE: Efficient Mixture-of-Expert LLMs Compression via Subspace Expert Merging](https://arxiv.org/abs/2506.23266)
-以下为自用
+
+以下为自用，暂时仅仅支持 Qwen1.5-MoE-A2.7B
 ## Venv
 ```bash
 apt-get update
@@ -12,9 +13,10 @@ source .venv/bin/activate
 
 ## Install
 ```bash
-bash init.sh
+bash script/init.sh
 pip install -r requirements.txt
 # pip install git+https://github.com/huggingface/transformers
+git submodule update --init lm-evaluation-harness
 cd lm-evaluation-harness
 pip install -e .
 ```
@@ -25,6 +27,7 @@ bash script/download_model.sh
 
 # bash script/download_data.sh
 
+# output: data/qwen/wikitext_calibration.json
 bash script/prepare_data.sh # it takes 1-2 mins
 ```
 
@@ -51,3 +54,9 @@ bash script/qwen/kmeans_cluster.sh
 # output: fsas/zhanghongyu/SMoE/qwen/merged_models
 bash script/qwen/merge_expert.sh
 ```
+
+## evaluate
+```bash
+# evaluate merged model
+# input: fsas/zhanghongyu/SMoE/qwen/merged_models
+# output: fsas/zhanghongyu/SMoE/qwen/eval_results

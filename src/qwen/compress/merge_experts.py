@@ -481,7 +481,7 @@ def save_merged_model(
 def main():
     """主函数：执行专家合并"""
     # 配置参数
-    CLUSTER_N = 8  # 聚类数量
+    CLUSTER_N = 30  # 聚类数量
     MODEL_NAME = "Qwen/Qwen1.5-MoE-A2.7B"
     MODEL_PATH = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B"
     CLUSTER_DIR = f"/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/kmeans_clusters_{CLUSTER_N}"  # 聚类结果存放位置
@@ -519,7 +519,7 @@ def main():
         )
         
         # 保存合并后的模型（不保存分词器）
-        model_name = f"qwen1.5_moe_merged_{MERGING_METHOD}_CLUSTER_{CLUSTER_N}"
+        model_name = f"qwen1.5_moe_merged_{MERGING_METHOD}_cluster_{CLUSTER_N}"
         saved_path = save_merged_model(
             merged_model=merged_model,
             output_dir=OUTPUT_DIR,

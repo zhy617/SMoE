@@ -141,7 +141,7 @@ def main():
     # 配置参数
     RESULT_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/similarity_results"
     LAYER_IDX = list(range(24))  # 要聚类的层
-    N_CLUSTERS = 8  # 目标专家数量
+    N_CLUSTERS = 30  # 目标专家数量
     OUTPUT_DIR = f"/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/kmeans_clusters_{N_CLUSTERS}"
     for layer in LAYER_IDX:
         try:
