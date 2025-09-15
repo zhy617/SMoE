@@ -53,3 +53,8 @@ path = /root/fsas/zhanghongyu/SMoE/qwen/merged_models/qwen1.5_moe_merged_svd_CLU
 - 修复了bug
   - 激活专家数由 2 -> 4
 
+- 完成了评测脚本
+- 评测了原始模型(Qwen1.5-MoE-A2.7B, 60 experts)和合并后的模型(Qwen1.5-MoE-A2.7B, cluster 30)，发现相去甚远
+  结果见 `eval-results/qwen/qwen1.5_moe_merged_svd_cluster_30.md`
+- 为了验证合并代码的正确性，尝试了 cluster 60，发现结果与原始模型几乎一致
+  结果见 `eval-results/qwen/qwen1.5_moe_merged_svd_cluster_60.md`

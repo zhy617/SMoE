@@ -14,10 +14,12 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 RAW_LOG="$LOG_DIR/evaluate_benchmark_${TIMESTAMP}.log"
 touch "$RAW_LOG"  # 创建空日志文件
 
+CLUSTER_N=60  # 与压缩时的聚类数保持一致
+
 # 配置
 ORIGINAL_MODEL_NAME="Qwen/Qwen1.5-MoE-A2.7B"
 CACHE_DIR="/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B"
-COMPRESSED_MODEL="/root/fsas/zhanghongyu/SMoE/qwen/merged_models/qwen1.5_moe_merged_svd_cluster_30"
+COMPRESSED_MODEL="/root/fsas/zhanghongyu/SMoE/qwen/merged_models/qwen1.5_moe_merged_svd_cluster_${CLUSTER_N}"
 OUTPUT_DIR="/root/fsas/zhanghongyu/SMoE/qwen/eval_results"
 
 
@@ -46,15 +48,15 @@ cd lm-evaluation-harness
     echo "模型路径: $ORIGINAL_MODEL_PATH"
     echo "=================================="
     
-    lm_eval --model hf \
-        --model_args pretrained=$ORIGINAL_MODEL_NAME,trust_remote_code=True,cache_dir=$CACHE_DIR \
-        --tasks $TASKS \
-        --num_fewshot $NUM_FEWSHOT \
-        --batch_size $BATCH_SIZE \
-        --device cuda \
-        --limit $LIMIT \
-        --output_path $OUTPUT_DIR/original_benchmark_results.json \
-        --log_samples
+    # lm_eval --model hf \
+    #     --model_args pretrained=$ORIGINAL_MODEL_NAME,trust_remote_code=True,cache_dir=$CACHE_DIR \
+    #     --tasks $TASKS \
+    #     --num_fewshot $NUM_FEWSHOT \
+    #     --batch_size $BATCH_SIZE \
+    #     --device cuda \
+    #     --limit $LIMIT \
+    #     --output_path $OUTPUT_DIR/original_benchmark_results.json \
+    #     --log_samples
         
     echo ""
     echo "=================================="

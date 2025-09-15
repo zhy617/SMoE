@@ -70,12 +70,14 @@ bash script/qwen/merge_expert.sh
 # input: fsas/zhanghongyu/SMoE/qwen/merged_models
 # output: fsas/zhanghongyu/SMoE/qwen/eval_results
 bash script/qwen/evaluate_benchmark.sh
+# change the "CLUSTER_N" in the script/code to evaluate different merged models
 ```
 
 ## GPU Memory Consumption
 ### Qwen1.5-MoE-A2.7B
-|GPU | calculate_simi_freq | kmeans_cluster | merge_expert (N=30) | evaluate (N=30) |
-|-------|---------------------|----------------|---------------------|------------------|
+|  | calculate_simi_freq | kmeans_cluster | merge_expert (N=30) | merge_expert (N=60) |evaluate (N=30) |
+|-------|---------------------|----------------|---------------------|------------------|-------------------|
+| GPU Memory (GB) |                     |                |     |    110G            |                  |
 | 4090(48G)   | 1 | 1 | 4 | 1 |
 
 

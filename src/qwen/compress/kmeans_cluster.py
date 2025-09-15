@@ -141,19 +141,19 @@ def main():
     # 配置参数
     RESULT_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/similarity_results"
     LAYER_IDX = list(range(24))  # 要聚类的层
-    N_CLUSTERS = 30  # 目标专家数量
-    OUTPUT_DIR = f"/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/kmeans_clusters_{N_CLUSTERS}"
+    CLUSTERS_N = 60  # 目标专家数量
+    OUTPUT_DIR = f"/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/kmeans_clusters_{CLUSTERS_N}"
     for layer in LAYER_IDX:
         try:
             # 执行聚类
             cluster_labels, cluster_info = cluster_layer_experts(
                 result_dir=RESULT_DIR,
                 layer_idx=layer,
-                n_clusters=N_CLUSTERS,
+                n_clusters=CLUSTERS_N,
                 output_dir=OUTPUT_DIR
             )
             
-            print(f"\n✅ Successfully clustered layer {LAYER_IDX} experts into {N_CLUSTERS} clusters")
+            print(f"\n✅ Successfully clustered layer {LAYER_IDX} experts into {CLUSTERS_N} clusters")
             
         except Exception as e:
             print(f"❌ Error: {e}")
