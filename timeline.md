@@ -50,4 +50,6 @@ name = qwen1.5_moe_merged_svd_CLUSTER_8
 # info
 path = /root/fsas/zhanghongyu/SMoE/qwen/merged_models/qwen1.5_moe_merged_svd_CLUSTER_8/merge_info.json
 ```
+- 修复了bug
+  - 激活专家数由 2 -> 4
 

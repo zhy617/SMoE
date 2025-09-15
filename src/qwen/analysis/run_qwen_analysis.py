@@ -45,9 +45,9 @@ def main() -> None:
     for i in tqdm(range(num_samples), desc="Generating hidden states"):
         sample_save_dir = os.path.join(BASE_HIDDEN_STATES_DIR, f"sample_{i}")
         
-        if not os.path.exists(sample_save_dir) or not os.listdir(sample_save_dir):
-            sample_input_ids = torch.tensor([calibration_data[i]], dtype=torch.long)
-            generate_and_save_hidden_states(model, sample_input_ids, sample_save_dir)
+        # if not os.path.exists(sample_save_dir) or not os.listdir(sample_save_dir):
+        sample_input_ids = torch.tensor([calibration_data[i]], dtype=torch.long)
+        generate_and_save_hidden_states(model, sample_input_ids, sample_save_dir)
 
     # --- 步骤 2: 从所有样本的保存结果进行分析并聚合 ---
     print("\n" + "="*20 + " Step 2: Analyzing all samples and calculating similarity " + "="*20)
@@ -123,7 +123,7 @@ def main() -> None:
                 activation_counts = calculate_expert_activation_frequency(
                     sample_save_dir,
                     target_moe_layer_idx=layer_idx,
-                    top_k=2  # Qwen1.5-MoE每个token激活2个专家
+                    top_k=4  # Qwen1.5-MoE每个token激活2个专家
                 )
                 
                 if activation_counts is not None:

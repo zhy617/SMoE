@@ -41,6 +41,10 @@ def generate_and_save_hidden_states(
             layer = cast(Qwen2MoeDecoderLayer, layer_module)
             print(f"  - Processing layer {i}...")
 
+            layer_device = next(layer.parameters()).device
+            hidden_states = hidden_states.to(layer_device)
+            # position_embeddings = position_embeddings.to(layer_device)
+
             # 1. Attention Block
             residual = hidden_states
             hidden_states = layer.input_layernorm(hidden_states)
@@ -181,7 +185,7 @@ def calculate_expert_similarity_matrix(expert_activations: torch.Tensor) -> torc
 def calculate_expert_activation_frequency(
     saved_states_dir: str,
     target_moe_layer_idx: int,
-    top_k: int = 2
+    top_k: int = 4
 ) -> Optional[torch.Tensor]:
     """
     从保存的router logits计算专家激活频率。

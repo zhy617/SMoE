@@ -71,3 +71,15 @@ bash script/qwen/merge_expert.sh
 # output: fsas/zhanghongyu/SMoE/qwen/eval_results
 bash script/qwen/evaluate_benchmark.sh
 ```
+
+## GPU Memory Consumption
+### Qwen1.5-MoE-A2.7B
+|GPU | calculate_simi_freq | kmeans_cluster | merge_expert (N=30) | evaluate (N=30) |
+|-------|---------------------|----------------|---------------------|------------------|
+| 4090(48G)   | 1 | 1 | 4 | 1 |
+
+
+| cluster number                    | "mmlu,winogrande,arc_easy,arc_challenge"|
+|--------------------------|-----------------------------------------|
+| original model         | 32G                                     |
+| cluster N=30            | 20G                                     |

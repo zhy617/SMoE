@@ -6,7 +6,7 @@ import numpy as np
 import json
 import os
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional, cast
+from typing import Dict, List, Tuple, Optional, cast, Any
 from transformers.models.qwen2_moe.modeling_qwen2_moe import Qwen2MoeSparseMoeBlock, Qwen2MoeMLP, Qwen2MoeForCausalLM, Qwen2MoeDecoderLayer
 from transformers import PreTrainedTokenizerBase, Qwen2TokenizerFast, AutoModelForCausalLM, AutoTokenizer
 import copy
@@ -478,6 +478,41 @@ def save_merged_model(
         traceback.print_exc()
         raise
 
+def update_model_config(model_path, cluster_n) -> None:
+    """更新模型配置文件中的专家数量"""
+    import json
+    
+    config_path = os.path.join(model_path, "config.json")
+    
+    if os.path.exists(config_path):
+        with open(config_path, 'r') as f:
+            config: Dict[str, Any] = json.load(f)
+        
+        # 更新专家数量配置
+        original_experts = config.get("num_experts", 60)
+        config["num_experts"] = cluster_n
+        
+        # 确保 num_experts_per_tok 不超过 cluster_n
+        config["num_experts_per_tok"] = min(config.get("num_experts_per_tok", 4), cluster_n)
+        
+        # 记录原始专家数量（用于追踪）
+        config["_original_num_experts"] = original_experts
+        config["_compression_info"] = {
+            "method": "svd_clustering",
+            "original_experts": original_experts,
+            "compressed_experts": cluster_n,
+            "compression_ratio": cluster_n / original_experts
+        }
+        
+        with open(config_path, 'w') as f:
+            json.dump(config, f, indent=2, ensure_ascii=False)
+        
+        print(f"✅ Updated config.json:")
+        print(f"   num_experts: {original_experts} -> {cluster_n}")
+        print(f"   num_experts_per_tok: {config['num_experts_per_tok']}")
+    else:
+        print(f"❌ Config file not found: {config_path}")
+
 def main():
     """主函数：执行专家合并"""
     # 配置参数
@@ -496,19 +531,27 @@ def main():
         print("🚀 Starting Expert Merging Pipeline")
         print(f"{'='*60}")
         
-        # 加载原始模型（不加载分词器，避免潜在问题）
-        print("📂 Loading original model...")
+        # 加载原始模型和tokenizer
+        print("📥 Loading original model and tokenizer...")
         
         model = cast(Qwen2MoeForCausalLM, AutoModelForCausalLM.from_pretrained(
             MODEL_NAME,
             cache_dir = MODEL_PATH,
             dtype=torch.bfloat16,
             device_map="auto", 
-            trust_remote_code=True
+            trust_remote_code=True,
         ))
 
         print(f"✅ Model loaded: {type(model).__name__}")
-        
+
+        # 加载tokenizer
+        from transformers import AutoTokenizer
+        tokenizer = AutoTokenizer.from_pretrained(
+            MODEL_NAME, 
+            cache_dir = MODEL_PATH,
+            trust_remote_code=True,
+        )
+
         # 执行专家合并
         merged_model = merge_model_experts(
             model=model,
@@ -525,12 +568,18 @@ def main():
             output_dir=OUTPUT_DIR,
             model_name=model_name,
             save_config=True,
-            tokenizer=None  # 不保存分词器
+            tokenizer=tokenizer
         )
-        
+
+        # config_path = os.path.join(saved_path, "config.json")
+
+        # 🚨 重要：更新配置文件
+        print("🔄 Updating model configuration...")
+        update_model_config(saved_path, CLUSTER_N)
+
         print(f"\n🎉 Expert merging pipeline completed successfully!")
         print(f"🎯 Merged model saved to: {saved_path}")
-        print(f"📝 Note: Tokenizer not saved. Use original model's tokenizer when loading.")
+        
         
     except Exception as e:
         print(f"💥 Fatal error during merging: {e}")
