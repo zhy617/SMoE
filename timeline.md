@@ -37,3 +37,17 @@
 
 ### Questions
 - None
+
+
+## 9.15
+### Done
+- 实现了模型的压缩
+```
+# 路径
+path = /root/fsas/zhanghongyu/SMoE/qwen/merged_models/qwen1.5_moe_merged_svd_CLUSTER_8
+# name
+name = qwen1.5_moe_merged_svd_CLUSTER_8
+# info
+path = /root/fsas/zhanghongyu/SMoE/qwen/merged_models/qwen1.5_moe_merged_svd_CLUSTER_8/merge_info.json
+```
+

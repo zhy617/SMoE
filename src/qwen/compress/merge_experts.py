@@ -54,12 +54,19 @@ def svd_subspace_alignment(expert_weights: List[torch.Tensor], relative_frequenc
     
     if len(expert_weights) != len(relative_frequencies):
         raise ValueError("Number of weights and frequencies must match")
+
+    # 记录原始数据类型
+    original_dtype = expert_weights[0].dtype
+    original_device = expert_weights[0].device
+
+    # Step 1: 转换为float32进行SVD计算，确保在同一设备上
+    expert_weights_float32 = [w.float().to(original_device) for w in expert_weights]
     
-    # Step 1: 将所有专家权重垂直连接 - 按照论文公式(5)
+    # Step 2: 将所有专家权重垂直连接 - 按照论文公式(5)
     # W^(1), W^(2), ..., W^(n) -> [W^(1); W^(2); ...; W^(n)]
-    concatenated_weights = torch.cat(expert_weights, dim=1)  # [hidden_size, n_experts * intermediate_size]
+    concatenated_weights = torch.cat(expert_weights_float32, dim=1)  # [hidden_size, n_experts * intermediate_size]
     
-    # Step 2: 进行SVD分解: W = U Σ V^T
+    # Step 3: 进行SVD分解: W = U Σ V^T
     svd_result = svd(concatenated_weights, full_matrices=False)
     U: torch.Tensor = svd_result[0]  # [hidden_size, min(hidden_size, n_experts * intermediate_size)]
     S: torch.Tensor = svd_result[1]  # [min(hidden_size, n_experts * intermediate_size)]
@@ -69,7 +76,7 @@ def svd_subspace_alignment(expert_weights: List[torch.Tensor], relative_frequenc
     intermediate_size = expert_weights[0].shape[1]  # intermediate_size
     
     
-    # Step 3: 将V^T矩阵分割回原来的专家块
+    # Step 4: 将V^T矩阵分割回原来的专家块
     # V^T的形状是 [min(hidden_size, n_experts * intermediate_size), n_experts * intermediate_size]
     # 我们需要将列维度分割成 n_experts 个块，每个块大小为 intermediate_size
     V_blocks: List[torch.Tensor] = []
@@ -82,14 +89,17 @@ def svd_subspace_alignment(expert_weights: List[torch.Tensor], relative_frequenc
     # Step 4: 按照激活频率对V块进行加权合并 - 论文公式(7)
     # V_merged = Σ f(V_i) * V_i / Σ f(V_i)
     # 加权合并V块
-    V_merged = torch.zeros_like(V_blocks[0])  # [intermediate_size, intermediate_size]
+    V_merged = torch.zeros_like(V_blocks[0])  # [svd_rank, intermediate_size]
     for V_block, weight in zip(V_blocks, relative_frequencies):
         V_merged += weight * V_block
     
     # Step 5: 重构最终的权重矩阵
     # W_merged = U_reduced @ diag(S_reduced) @ V_merged^T
-    aligned_weight = U @ torch.diag(S) @ V_merged.T  # [hidden_size, intermediate_size]
+    aligned_weight = U @ torch.diag(S) @ V_merged  # [hidden_size, intermediate_size]
     
+    # 添加类型转换
+    aligned_weight = aligned_weight.to(dtype=original_dtype, device=original_device)
+
     return aligned_weight
 
 def get_cluster_relative_frequencies(
@@ -133,8 +143,15 @@ def merge_experts_in_moe_layer(
     merging_method: str = "svd"
 ) -> Qwen2MoeSparseMoeBlock:
     """
-    合并MoE层中的专家
+    合并MoE层中的专家 - 修复设备一致性问题
     """
+    # 获取模型所在的设备
+    model_device = next(moe_layer.parameters()).device
+
+    # 确保所有张量都在同一设备上
+    cluster_labels = cluster_labels.to(model_device)
+    expert_frequencies = expert_frequencies.to(model_device)
+
     # 创建新的MoE层副本
     merged_moe_layer = copy.deepcopy(moe_layer)
     

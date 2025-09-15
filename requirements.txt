@@ -4,7 +4,7 @@ torch==2.3.1 --extra-index-url https://download.pytorch.org/whl/cu121
 # Hugging Face ecosystem core
 transformers==4.56.1
 # Efficient tokenizer
-tokenizers==0.19.1
+tokenizers==0.22.0
 # For loading and processing datasets
 datasets==2.20.0
 # For handling models in the safe tensor format
@@ -16,7 +16,7 @@ accelerate==0.31.0
 # Progress bar tool for monitoring training process
 tqdm==4.66.4
 # For easy downloading of models and datasets from Hugging Face Hub
-huggingface-hub==0.23.4
+huggingface-hub==0.34.4
 
 # --- Code Style & Type Hinting ---
 # Provides type stubs for transformers for static analysis
