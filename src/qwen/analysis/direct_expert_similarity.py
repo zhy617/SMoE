@@ -193,7 +193,7 @@ def calculate_expert_activation_frequency(
     Args:
         saved_states_dir: 保存hidden states和router logits的目录
         target_moe_layer_idx: 目标MoE层的索引
-        top_k: 每个token激活的专家数量 (对于Qwen1.5-MoE通常是2)
+        top_k: 每个token激活的专家数量 (对于Qwen1.5-MoE通常是4)
         
     Returns:
         activation_counts: 形状为(num_experts,)的张量，记录每个专家被激活的次数

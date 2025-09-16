@@ -17,8 +17,8 @@ from .direct_expert_similarity import (
 BASE_HIDDEN_STATES_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/hidden_states_cache"
 RESULT_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results"
 SAMPLE_INPUT_FILE = "/root/SMoE/data/qwen/wikitext_calibration.json"
-MODEL_NAME = "Qwen/Qwen1.5-MoE-A2.7B"
-MODEL_DIR = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B"
+MODEL_NAME = "Qwen/Qwen1.5-MoE-A2.7B-Chat"
+MODEL_DIR = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B-Chat"
 SAMPLE_SIZE = 128
 MAX_LENGTH = 2048
 

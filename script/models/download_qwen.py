@@ -18,8 +18,8 @@ save_dir = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B-Chat"  # 自定义保存路
 
 # Download tokenizer
 print("Downloading tokenizer...")
-tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=save_dir, mirror="tuna")
+tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=save_dir, mirror="aliyun")
 
 # Download model
 print("Downloading model...")
-model = AutoModelForCausalLM.from_pretrained(model_name, cache_dir=save_dir, mirror="tuna")
+model = AutoModelForCausalLM.from_pretrained(model_name, cache_dir=save_dir, mirror="aliyun")
