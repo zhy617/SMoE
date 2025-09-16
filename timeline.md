@@ -55,6 +55,31 @@ path = /root/fsas/zhanghongyu/SMoE/qwen/merged_models/qwen1.5_moe_merged_svd_CLU
 
 - 完成了评测脚本
 - 评测了原始模型(Qwen1.5-MoE-A2.7B, 60 experts)和合并后的模型(Qwen1.5-MoE-A2.7B, cluster 30)，发现相去甚远
+
   结果见 `eval-results/qwen/qwen1.5_moe_merged_svd_cluster_30.md`
-- 为了验证合并代码的正确性，尝试了 cluster 60，发现结果与原始模型几乎一致
+- 为了验证合并代码的正确性，尝试了 cluster 60，发现结果与原始模型几乎一致，代表合并代码大概率是正确的
+
   结果见 `eval-results/qwen/qwen1.5_moe_merged_svd_cluster_60.md`
+
+
+## 9.16
+### Done
+- 昨天发现 30 个专家的模型效果与论文差距较大。发现论文中测试的是 Qwen1.5-MoE-A2.7B-Chat，故重新下载了该模型，并进行了合并和评测，测试了 45 和 30 个专家的模型
+
+  结果见 `eval-results/qwen/qwen1.5_moe_merged_svd_cluster_45.md` 和 `eval-results/qwen/qwen1.5_moe_merged_svd_cluster_30.md`
+
+||ARC_c ↑|ARC_e ↑|MMLU ↑|WinoG ↑|
+|---|---|---|---|---|
+|(paper)Qwen1.5-MoE-A2.7B-Chat|0.40|0.71|0.53|0.66|
+|(self)Qwen1.5-MoE-A2.7B-Chat|0.397|0.709|0.6016|0.6540|
+|(paper)Cluster 45|0.37|0.69|0.53|0.66|
+|(self)Cluster 45|0.3400|0.6110|0.3884|0.6100|
+|(paper)Cluster 30|0.32|0.58|0.38|0.58|
+|(self)Cluster 30|0.2390|0.4320|0.2331|0.5280|
+
+### Questions
+- 我已经实现了单层的专家合并，实测后发现与论文结果差距较大。请问多层合并具体应该怎么实现。我现在困惑的是
+  - 多层合并后，专家权重应该放在哪一层？（比如第0层和第1层的专家合并后，结果放在第0层还是第1层？）
+  - 多层合并后，路由器应该怎么处理？（比如第0层和第1层的专家合并后，假设专家放在第0层，那第0层的路由怎么确定？第1层的路由又怎么确定？）
+
+或者可能是我理解错了，实际上还是单层的合并，只是每层的合并数量不一样？那怎么在相邻两层中调配专家数量？
