@@ -32,7 +32,7 @@ pip install -e .
 
 ## Model and Data
 ```bash
-bash script/download_model.sh
+bash script/download_models.sh
 
 # bash script/download_data.sh
 
