@@ -575,7 +575,7 @@ def main():
 
         # 🚨 重要：更新配置文件
         print("🔄 Updating model configuration...")
-        update_model_config(saved_path, CLUSTER_N)
+        # update_model_config(saved_path, CLUSTER_N)
 
         print(f"\n🎉 Expert merging pipeline completed successfully!")
         print(f"🎯 Merged model saved to: {saved_path}")

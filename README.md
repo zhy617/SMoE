@@ -64,6 +64,12 @@ bash script/qwen/kmeans_cluster.sh
 bash script/qwen/merge_expert.sh
 ```
 
+```bash
+# change the config json
+bash script/qwen/update_config.sh
+```
+
+
 ## evaluate
 ```bash
 # evaluate merged model
