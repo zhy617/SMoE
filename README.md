@@ -60,6 +60,12 @@ bash script/qwen/calculate_simi_freq.sh
 ```
 
 ```bash
+# calculate redundancy and allocate experts
+# output: fsas/zhanghongyu/SMoE/qwen/analysis/redundancy.json
+bash script/qwen/calculate_redundancy.sh    
+```
+
+```bash
 # kmeans cluster
 # input: fsas/zhanghongyu/SMoE/qwen/analysis/similarity_results
 # output: fsas/zhanghongyu/SMoE/qwen/analysis/kmeans_clusters_{N}
