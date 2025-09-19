@@ -24,17 +24,27 @@ pip install -r requirements.txt
 ```bash
 bash script/init.sh
 pip install -r requirements.txt
-# pip install git+https://github.com/huggingface/transformers
-git submodule update --init lm-evaluation-harness
-cd lm-evaluation-harness
-pip install -e .
 ```
+
+```bash
+git submodule update --init libs/transformers
+cd libs/transformers
+pip install -e .
+cd ../..
+```
+
+```bash
+git submodule update --init libs/lm-evaluation-harness
+cd libs/lm-evaluation-harness
+pip install -e .
+cd ../..
+```
+
+
 
 ## Model and Data
 ```bash
 bash script/download_models.sh
-
-# bash script/download_data.sh
 
 # output: data/qwen/wikitext_calibration.json
 bash script/prepare_data.sh # it takes 1-2 mins
@@ -71,6 +81,11 @@ bash script/qwen/update_config.sh
 
 
 ## evaluate
+```bash
+# download the evaluation datasets
+bash script/download_datasets.sh
+```
+
 ```bash
 # evaluate merged model
 # input: fsas/zhanghongyu/SMoE/qwen/merged_models
