@@ -83,3 +83,24 @@ path = /root/fsas/zhanghongyu/SMoE/qwen/merged_models/qwen1.5_moe_merged_svd_CLU
   - 多层合并后，路由器应该怎么处理？（比如第0层和第1层的专家合并后，假设专家放在第0层，那第0层的路由怎么确定？第1层的路由又怎么确定？）
 
 或者可能是我理解错了，实际上还是单层的合并，只是每层的合并数量不一样？那怎么在相邻两层中调配专家数量？
+
+## 9.19
+### Done
+- 实现了 Adaptive Ratio Clustering，并测试，较论文结果仍有差距
+
+  结果见 `eval-results/qwen/qwen1.5_moe_merged_adaptive_cluster_30.md`
+
+||ARC_c ↑|ARC_e ↑|MMLU ↑|WinoG ↑|
+|---|---|---|---|---|
+|(paper)Qwen1.5-MoE-A2.7B-Chat|0.40|0.71|0.53|0.66|
+|(self)Qwen1.5-MoE-A2.7B-Chat|0.397|0.709|0.6016|0.6540|
+|(paper)Cluster 45|0.37|0.69|0.53|0.66|
+|(self)Cluster 45|0.3400|0.6110|0.3884|0.6100|
+|(paper)Cluster 30|0.32|0.58|0.38|0.58|
+|(self)Cluster 30|0.2390|0.4320|0.2331|0.5280|
+|(self)Adaptive 30(2 groups)|0.2650|0.5090|0.2305|0.5390|
+
+
+## 9.20
+### Done
+- 调整参数，并测试

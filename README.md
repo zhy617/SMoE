@@ -86,7 +86,7 @@ bash script/qwen/update_config.sh
 ```
 
 
-## evaluate
+## Evaluate
 ```bash
 # download the evaluation datasets
 bash script/download_datasets.sh
@@ -112,3 +112,14 @@ bash script/qwen/evaluate_benchmark.sh
 |--------------------------|-----------------------------------------|
 | original model         | 32G                                     |
 | cluster N=30            | 20G                                     |
+
+## Result
+||ARC_c ↑|ARC_e ↑|MMLU ↑|WinoG ↑|
+|---|---|---|---|---|
+|(paper)Qwen1.5-MoE-A2.7B-Chat|0.40|0.71|0.53|0.66|
+|(self)Qwen1.5-MoE-A2.7B-Chat|0.397|0.709|0.6016|0.6540|
+|(paper)Cluster 45|0.37|0.69|0.53|0.66|
+|(self)Cluster 45|0.3400|0.6110|0.3884|0.6100|
+|(paper)Cluster 30|0.32|0.58|0.38|0.58|
+|(self)Cluster 30|0.2390|0.4320|0.2331|0.5280|
+|(self)Adaptive 30|0.2650|0.5090|0.2305|0.5390|
