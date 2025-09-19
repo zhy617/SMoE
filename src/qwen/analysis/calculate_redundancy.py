@@ -4,7 +4,7 @@ import json
 from tqdm import tqdm
 import argparse
 import numpy as np
-from typing import cast
+from typing import cast, Dict
 
 # 配置路径
 SIMILARITY_RESULTS_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/similarity_results"
@@ -52,7 +52,7 @@ def allocate_experts_by_redundancy(layer_redundancy: dict, group_size: int, targ
     print(f"   - 目标平均专家数: {target_avg_experts}")
     print(f"   - 专家数范围: [{min_experts}, {max_experts}]")
     
-    expert_allocation = {}
+    expert_allocation: Dict[int, int] = {}
     
     # 按组处理层
     num_groups = (NUM_LAYERS + group_size - 1) // group_size  # 向上取整

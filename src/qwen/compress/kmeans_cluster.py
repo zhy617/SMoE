@@ -5,6 +5,8 @@ from sklearn.cluster import KMeans
 from typing import Dict, List, Tuple, Any, Optional
 import json
 import os
+import argparse
+
 
 def load_similarity_matrix(file_path: str) -> torch.Tensor:
     """加载相似度矩阵文件"""
@@ -137,20 +139,38 @@ def cluster_layer_experts(
     return cluster_labels, cluster_info
 
 def main():
-    """示例使用"""
+    parser = argparse.ArgumentParser(description="基于冗余度分配结果进行K-means聚类")
+    parser.add_argument("--similarity_dir", type=str, required=True,
+                       help="相似度矩阵结果目录路径")
+    parser.add_argument("--allocation_file", type=str, required=True,
+                       help="专家分配结果JSON文件路径")
+    parser.add_argument("--output_dir", type=str, required=True,
+                       help="聚类结果输出目录")
+    
+    args = parser.parse_args()
+
+    with open(args.allocation_file, 'r') as f:
+        data = json.load(f)
+        print(data)
+        expert_allocation: Dict[str, int] = data.get('allocation', {})
+
+    print(expert_allocation)
+
     # 配置参数
-    RESULT_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/similarity_results"
+    # RESULT_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/similarity_results"
     LAYER_IDX = list(range(24))  # 要聚类的层
     CLUSTER_N = 30  # 目标专家数量
-    OUTPUT_DIR = f"/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/kmeans_clusters_{CLUSTER_N}"
+    # OUTPUT_DIR = f"/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/kmeans_clusters_{CLUSTER_N}"
+    output_dir = os.path.join(args.output_dir, f"kmeans_clusters_{CLUSTER_N}")
+
     for layer in LAYER_IDX:
         try:
             # 执行聚类
             cluster_labels, cluster_info = cluster_layer_experts(
-                result_dir=RESULT_DIR,
+                result_dir=args.similarity_dir,
                 layer_idx=layer,
-                n_clusters=CLUSTER_N,
-                output_dir=OUTPUT_DIR
+                n_clusters=expert_allocation.get(str(layer), CLUSTER_N),  # 使用了分配的专家数
+                output_dir=output_dir
             )
 
             print(f"\n✅ Successfully clustered layer {layer} experts into {CLUSTER_N} clusters")
