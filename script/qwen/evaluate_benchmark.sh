@@ -14,7 +14,7 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 RAW_LOG="$LOG_DIR/evaluate_benchmark_${TIMESTAMP}.log"
 touch "$RAW_LOG"  # 创建空日志文件
 
-CLUSTER_N=45  # 与压缩时的聚类数保持一致
+CLUSTER_N=30  # 与压缩时的聚类数保持一致
 
 # 配置
 ORIGINAL_MODEL_NAME="Qwen/Qwen1.5-MoE-A2.7B-Chat"
@@ -24,7 +24,8 @@ OUTPUT_DIR="/root/fsas/zhanghongyu/SMoE/qwen/eval_results"
 
 
 # 根据表格定义的任务
-TASKS="mmlu,winogrande,arc_easy,arc_challenge"
+CORE_TASKS="mmlu,winogrande,arc_easy,arc_challenge"
+OTHER_TASKS="boolq,rte,hellaswag"
 
 # 评估参数
 BATCH_SIZE=4
@@ -39,7 +40,7 @@ echo "🔢 批次大小: $BATCH_SIZE" | tee -a "$RAW_LOG"
 echo "🎯 Few-shot: $NUM_FEWSHOT" | tee -a "$RAW_LOG"
 
 mkdir -p "$OUTPUT_DIR"
-cd lm-evaluation-harness
+# cd lm-evaluation-harness
 
 # 评估压缩模型
 {
@@ -50,7 +51,7 @@ cd lm-evaluation-harness
     
     # lm_eval --model hf \
     #     --model_args pretrained=$ORIGINAL_MODEL_NAME,trust_remote_code=True,cache_dir=$CACHE_DIR \
-    #     --tasks $TASKS \
+    #     --tasks $OTHER_TASKS \
     #     --num_fewshot $NUM_FEWSHOT \
     #     --batch_size $BATCH_SIZE \
     #     --device cuda \
@@ -66,7 +67,7 @@ cd lm-evaluation-harness
     
     lm_eval --model hf \
         --model_args pretrained=$COMPRESSED_MODEL,trust_remote_code=True \
-        --tasks $TASKS \
+        --tasks $OTHER_TASKS \
         --num_fewshot $NUM_FEWSHOT \
         --batch_size $BATCH_SIZE \
         --device cuda \

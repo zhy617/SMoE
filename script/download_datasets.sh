@@ -13,7 +13,7 @@ source .venv/bin/activate
 cd libs/lm-evaluation-harness
 python -m lm_eval --model hf \
     --model_args pretrained=gpt2 \
-    --tasks mmlu,winogrande,arc_easy,arc_challenge \
+    --tasks boolq,rte,hellaswag \
     --limit 1 \
     # --download_only
 cd ../..
