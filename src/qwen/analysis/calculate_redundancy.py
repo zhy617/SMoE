@@ -155,7 +155,7 @@ def main():
     """
     parser = argparse.ArgumentParser(description="计算专家冗余度并分配专家数量")
     parser.add_argument("--group_size", type=int, default=4, help="相邻层组的大小")
-    parser.add_argument("--target_avg_experts", type=float, default=30.0, help="目标平均专家数")
+    parser.add_argument("--target_avg_CLUSTER_N", type=float, default=30.0, help="目标平均专家数")
     parser.add_argument("--min_experts", type=int, default=15, help="最少专家数")
     parser.add_argument("--max_experts", type=int, default=45, help="最多专家数")
     parser.add_argument("--allocate_experts", action="store_true", help="是否进行专家分配")
@@ -208,19 +208,19 @@ def main():
         expert_allocation = allocate_experts_by_redundancy(
             layer_redundancy, 
             args.group_size, 
-            args.target_avg_experts,
+            args.target_avg_CLUSTER_N,
             args.min_experts,
             args.max_experts
         )
         
         # 保存专家分配结果
         allocation_file = os.path.join(REDUNDANCY_OUTPUT_DIR, 
-                                     f"expert_allocation_group{args.group_size}_avg{args.target_avg_experts}.json")
+                                     f"expert_allocation_group{args.group_size}_avg{args.target_avg_CLUSTER_N}.json")
         with open(allocation_file, 'w') as f:
             json.dump({
                 "config": {
                     "group_size": args.group_size,
-                    "target_avg_experts": args.target_avg_experts,
+                    "target_avg_cluster_n": args.target_avg_CLUSTER_N,
                     "min_experts": args.min_experts,
                     "max_experts": args.max_experts
                 },

@@ -69,6 +69,7 @@ bash script/qwen/calculate_redundancy.sh
 # kmeans cluster
 # input: fsas/zhanghongyu/SMoE/qwen/analysis/similarity_results
 # output: fsas/zhanghongyu/SMoE/qwen/analysis/kmeans_clusters_{N}
+# note: change the allocation_file!!!
 bash script/qwen/kmeans_cluster.sh
 ```
 
@@ -122,4 +123,5 @@ bash script/qwen/evaluate_benchmark.sh
 |(self)Cluster 45|0.3400|0.6110|0.3884|0.6100|
 |(paper)Cluster 30|0.32|0.58|0.38|0.58|
 |(self)Cluster 30|0.2390|0.4320|0.2331|0.5280|
-|(self)Adaptive 30|0.2650|0.5090|0.2305|0.5390|
+|(self)Adaptive 30(2 groups)|0.2650|0.5090|0.2305|0.5390|
+|(self)Adaptive 30(3 groups)|0.2470|0.4310|0.2316|0.5360|
