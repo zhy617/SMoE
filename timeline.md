@@ -104,3 +104,23 @@ path = /root/fsas/zhanghongyu/SMoE/qwen/merged_models/qwen1.5_moe_merged_svd_CLU
 ## 9.20
 ### Done
 - 调整参数，并测试
+
+||ARC_c ↑|ARC_e ↑|MMLU ↑|WinoG ↑|BoolQ ↑|HellaS ↑|RTE  ↑|
+|---|---|---|---|---|---|---|---|
+|(paper)Qwen1.5-MoE-A2.7B-Chat|0.40|0.71|0.60|0.66|0.81|0.59|0.74|
+|(self)Qwen1.5-MoE-A2.7B-Chat|0.397|0.709|0.6016|0.6540|
+||
+|(paper)Cluster 45|0.37|0.69|0.53|0.66|0.80|0.56|0.76|
+|(self)Simple 45|0.3400|0.6110|0.3884|0.6100|
+|(self)Adaptive 45(2 groups)|0.3540|0.6410|0.3588|0.6040|0.6730|0.4610|0.6245|
+|(self)Adaptive 45(3 groups)|0.3870|0.6840|0.4778|0.6180|0.7380|0.4750|0.5993|
+||
+|(paper)Cluster 30|0.32|0.58|0.38|0.58|0.51|0.46|0.57|
+|(self)Simple 30|0.2390|0.4320|0.2331|0.5280|
+|(self)Adaptive 30(2 groups)|0.2650|0.5090|0.2305|0.5390|
+|(self)Adaptive 30(3 groups)|0.2470|0.4310|0.2316|0.5360|0.4880|0.3550|0.5235|
+
+## 9.21
+### Done
+- 进行微调，跑了 1250 步，实际用时 3 小时。
+  微调数据集为 ultrafeedback_binarized

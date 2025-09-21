@@ -91,6 +91,7 @@ bash script/qwen/update_config.sh
 # fine-tune merged model
 # input: fsas/zhanghongyu/SMoE/qwen/merged_models
 # output: fsas/zhanghongyu/SMoE/qwen/finetuned_models
+# 120G
 bash script/qwen/finetune.sh
 ```
 
