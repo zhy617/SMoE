@@ -516,7 +516,7 @@ def update_model_config(model_path, cluster_n) -> None:
 def main():
     """主函数：执行专家合并"""
     # 配置参数
-    CLUSTER_N = 30  # 聚类数量
+    CLUSTER_N = 45  # 聚类数量
     MODEL_NAME = "Qwen/Qwen1.5-MoE-A2.7B-Chat"
     MODEL_PATH = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B-Chat"
     CLUSTER_DIR = f"/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/kmeans_clusters_{CLUSTER_N}"  # 聚类结果存放位置

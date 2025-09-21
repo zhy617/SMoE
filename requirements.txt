@@ -11,6 +11,11 @@ datasets==4.0.0
 safetensors==0.6.2
 # Protobuf library for serialization (fixes import error)
 protobuf==6.32.1
+# trl
+trl==0.23.0
+# tensorboard support for PyTorch
+tensorboardX==2.6.4
+
 
 # --- Training Acceleration & Auxiliary Tools ---
 # Simplifies PyTorch distributed and mixed precision training

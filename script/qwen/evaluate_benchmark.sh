@@ -14,7 +14,7 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 RAW_LOG="$LOG_DIR/evaluate_benchmark_${TIMESTAMP}.log"
 touch "$RAW_LOG"  # 创建空日志文件
 
-CLUSTER_N=30  # 与压缩时的聚类数保持一致
+CLUSTER_N=45  # 与压缩时的聚类数保持一致
 
 # 配置
 ORIGINAL_MODEL_NAME="Qwen/Qwen1.5-MoE-A2.7B-Chat"

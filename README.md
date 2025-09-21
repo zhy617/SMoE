@@ -86,6 +86,13 @@ bash script/qwen/merge_expert.sh
 bash script/qwen/update_config.sh
 ```
 
+## Fine-tune
+```bash
+# fine-tune merged model
+# input: fsas/zhanghongyu/SMoE/qwen/merged_models
+# output: fsas/zhanghongyu/SMoE/qwen/finetuned_models
+bash script/qwen/finetune.sh
+```
 
 ## Evaluate
 ```bash
