@@ -19,13 +19,15 @@ CLUSTER_N=45  # 与压缩时的聚类数保持一致
 # 配置
 ORIGINAL_MODEL_NAME="Qwen/Qwen1.5-MoE-A2.7B-Chat"
 CACHE_DIR="/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B-Chat"
-COMPRESSED_MODEL="/root/fsas/zhanghongyu/SMoE/qwen/merged_models/qwen1.5_moe_merged_svd_cluster_${CLUSTER_N}"
+# COMPRESSED_MODEL="/root/fsas/zhanghongyu/SMoE/qwen/merged_models/qwen1.5_moe_merged_svd_cluster_${CLUSTER_N}"
+COMPRESSED_MODEL="/root/fsas/zhanghongyu/SMoE/qwen/finetuned_models/qwen1.5_moe_merged_svd_cluster_45/final_model"
 OUTPUT_DIR="/root/fsas/zhanghongyu/SMoE/qwen/eval_results"
 
 
 # 根据表格定义的任务
 CORE_TASKS="mmlu,winogrande,arc_easy,arc_challenge"
 OTHER_TASKS="boolq,rte,hellaswag"
+ALL_TASKS="$CORE_TASKS,$OTHER_TASKS"
 
 # 评估参数
 BATCH_SIZE=4
@@ -49,15 +51,15 @@ mkdir -p "$OUTPUT_DIR"
     echo "模型路径: $ORIGINAL_MODEL_PATH"
     echo "=================================="
     
-    # lm_eval --model hf \
-    #     --model_args pretrained=$ORIGINAL_MODEL_NAME,trust_remote_code=True,cache_dir=$CACHE_DIR \
-    #     --tasks $OTHER_TASKS \
-    #     --num_fewshot $NUM_FEWSHOT \
-    #     --batch_size $BATCH_SIZE \
-    #     --device cuda \
-    #     --limit $LIMIT \
-    #     --output_path $OUTPUT_DIR/original_benchmark_results.json \
-    #     --log_samples
+    lm_eval --model hf \
+        --model_args pretrained=$ORIGINAL_MODEL_NAME,trust_remote_code=True,cache_dir=$CACHE_DIR \
+        --tasks $ALL_TASKS \
+        --num_fewshot $NUM_FEWSHOT \
+        --batch_size $BATCH_SIZE \
+        --device cuda \
+        --limit $LIMIT \
+        --output_path $OUTPUT_DIR/original_benchmark_results.json \
+        --log_samples
         
     echo ""
     echo "=================================="
@@ -65,15 +67,15 @@ mkdir -p "$OUTPUT_DIR"
     echo "模型路径: $COMPRESSED_MODEL"
     echo "=================================="
     
-    lm_eval --model hf \
-        --model_args pretrained=$COMPRESSED_MODEL,trust_remote_code=True \
-        --tasks $OTHER_TASKS \
-        --num_fewshot $NUM_FEWSHOT \
-        --batch_size $BATCH_SIZE \
-        --device cuda \
-        --limit $LIMIT \
-        --output_path $OUTPUT_DIR/compressed_benchmark_results.json \
-        --log_samples
+    # lm_eval --model hf \
+    #     --model_args pretrained=$COMPRESSED_MODEL,trust_remote_code=True \
+    #     --tasks $ALL_TASKS \
+    #     --num_fewshot $NUM_FEWSHOT \
+    #     --batch_size $BATCH_SIZE \
+    #     --device cuda \
+    #     --limit $LIMIT \
+    #     --output_path $OUTPUT_DIR/compressed_benchmark_results.json \
+    #     --log_samples
 
 
 } 2>&1 | tee -a "$RAW_LOG"
