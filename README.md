@@ -135,5 +135,5 @@ bash script/qwen/evaluate_benchmark.sh
 |(self)Adaptive 45(3 groups + finetune)|0.3960|0.7050|0.4965|0.6520|0.7480|0.4820|0.6209|
 |(paper)Cluster 30|0.32|0.58|0.38|0.58|0.51|0.46|0.57|
 |(self)Simple 30|0.2390|0.4320|0.2331|0.5280|
-|(self)Adaptive 30(2 groups)|0.2650|0.5090|0.2305|0.5390|
+|(self)Adaptive 30(2 groups)|0.2650|0.5090|0.2305|0.5390|0.5530|0.3630|0.5235|
 |(self)Adaptive 30(3 groups)|0.2470|0.4310|0.2316|0.5360|0.4880|0.3550|0.5235|
