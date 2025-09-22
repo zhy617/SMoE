@@ -12,7 +12,7 @@ from typing import cast, Dict, Any, List
 
 # 1. 配置参数
 # ------------------------------------------------------------------------------------
-CLUSTER_N = 45  # 聚类数量
+CLUSTER_N = 30  # 聚类数量
 MODEL_NAME = "qwen1.5_moe_merged_svd_cluster_" + str(CLUSTER_N)
 base_model_path = "/root/fsas/zhanghongyu/SMoE/qwen/merged_models" + "/" + MODEL_NAME
 dataset_name = "HuggingFaceH4/ultrafeedback_binarized" 
