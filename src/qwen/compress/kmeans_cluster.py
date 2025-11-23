@@ -139,18 +139,24 @@ def cluster_layer_experts(
 def main():
     """示例使用"""
     # 配置参数
-    RESULT_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/similarity_results"
-    LAYER_IDX = list(range(24))  # 要聚类的层
-    CLUSTER_N = 30  # 目标专家数量
-    OUTPUT_DIR = f"/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/kmeans_clusters_{CLUSTER_N}"
-    for layer in LAYER_IDX:
+    # SIMILARITY_RESULT_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/similarity_results"
+    # TARGET_LAYERS = list(range(24))  # 要聚类的层
+    # CLUSTER_N = 30  # 目标专家数量
+    # CLUSTER_DIR = f"/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/kmeans_clusters_{CLUSTER_N}"
+    from ..config import (
+        SIMILARITY_RESULT_DIR,
+        TARGET_LAYERS,
+        CLUSTER_N,
+        CLUSTER_DIR
+    )
+    for layer in TARGET_LAYERS:
         try:
             # 执行聚类
             cluster_labels, cluster_info = cluster_layer_experts(
-                result_dir=RESULT_DIR,
+                result_dir=SIMILARITY_RESULT_DIR,
                 layer_idx=layer,
                 n_clusters=CLUSTER_N,
-                output_dir=OUTPUT_DIR
+                output_dir=CLUSTER_DIR
             )
 
             print(f"\n✅ Successfully clustered layer {layer} experts into {CLUSTER_N} clusters")

@@ -517,15 +517,15 @@ def main():
     """主函数：执行专家合并"""
     # 配置参数
     CLUSTER_N = 30  # 聚类数量
-    MODEL_NAME = "Qwen/Qwen1.5-MoE-A2.7B-Chat"
-    MODEL_PATH = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B-Chat"
+    BASE_MODEL_NAME = "Qwen/Qwen1.5-MoE-A2.7B-Chat"
+    BASE_MODEL_PATH = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B-Chat"
     CLUSTER_DIR = f"/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/kmeans_clusters_{CLUSTER_N}"  # 聚类结果存放位置
-    RESULT_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/activation_frequency_results"   # 激活频率存放位置
-    OUTPUT_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/merged_models"
+    FREQ_RESULT_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/activation_frequency_results"   # 激活频率存放位置
+    OUTPUT_MODEL_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/merged_models"
     
-    # 要合并的MoE层 (Qwen1.5-MoE的MoE层通常是奇数层)
+    # 要合并的MoE层 
     TARGET_LAYERS = list(range(24))
-    MERGING_METHOD = "svd"  # 可选: "svd" 或 "frequency"
+    EXPERT_MERGING_METHOD = "svd"  # 可选: "svd" 或 "frequency"
     
     try:
         print("🚀 Starting Expert Merging Pipeline")
@@ -535,8 +535,8 @@ def main():
         print("📥 Loading original model and tokenizer...")
         
         model = cast(Qwen2MoeForCausalLM, AutoModelForCausalLM.from_pretrained(
-            MODEL_NAME,
-            cache_dir = MODEL_PATH,
+            BASE_MODEL_NAME,
+            cache_dir = BASE_MODEL_PATH,
             dtype=torch.bfloat16,
             device_map="auto", 
             trust_remote_code=True,
@@ -547,8 +547,8 @@ def main():
         # 加载tokenizer
         from transformers import AutoTokenizer
         tokenizer = AutoTokenizer.from_pretrained(
-            MODEL_NAME, 
-            cache_dir = MODEL_PATH,
+            BASE_MODEL_NAME, 
+            cache_dir = BASE_MODEL_PATH,
             trust_remote_code=True,
         )
 
@@ -556,16 +556,16 @@ def main():
         merged_model = merge_model_experts(
             model=model,
             cluster_dir=CLUSTER_DIR,
-            result_dir=RESULT_DIR,
+            result_dir=FREQ_RESULT_DIR,
             target_layers=TARGET_LAYERS,
-            merging_method=MERGING_METHOD
+            merging_method=EXPERT_MERGING_METHOD
         )
         
         # 保存合并后的模型（不保存分词器）
-        model_name = f"qwen1.5_moe_merged_{MERGING_METHOD}_cluster_{CLUSTER_N}"
+        model_name = f"qwen1.5_moe_merged_{EXPERT_MERGING_METHOD}_cluster_{CLUSTER_N}"
         saved_path = save_merged_model(
             merged_model=merged_model,
-            output_dir=OUTPUT_DIR,
+            output_dir=OUTPUT_MODEL_DIR,
             model_name=model_name,
             save_config=True,
             tokenizer=tokenizer

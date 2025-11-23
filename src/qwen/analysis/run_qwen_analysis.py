@@ -14,20 +14,27 @@ from .direct_expert_similarity import (
 )
 
 # ... config ...
-BASE_HIDDEN_STATES_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/hidden_states_cache"
-RESULT_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results"
-SAMPLE_INPUT_FILE = "/root/SMoE/data/qwen/wikitext_calibration.json"
-MODEL_NAME = "Qwen/Qwen1.5-MoE-A2.7B-Chat"
-MODEL_DIR = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B-Chat"
-SAMPLE_SIZE = 128
-MAX_LENGTH = 2048
+# HIDDEN_STATES_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/hidden_states_cache"
+# ANALYSIS_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results"
+# SAMPLE_INPUT_FILE = "/root/SMoE/data/qwen/wikitext_calibration.json"
+# BASE_MODEL_NAME = "Qwen/Qwen1.5-MoE-A2.7B-Chat"
+# BASE_MODEL_PATH = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B-Chat"
+# SAMPLE_SIZE = 128
+# MAX_LENGTH = 2048
+from ..config import (
+    HIDDEN_STATES_DIR,
+    ANALYSIS_DIR,
+    SAMPLE_INPUT_FILE,
+    BASE_MODEL_NAME,
+    BASE_MODEL_PATH,
+)
 
 def main() -> None:
     # ... 加载模型和数据 ...
     print("Loading model...")
     model = cast(Qwen2MoeForCausalLM, AutoModelForCausalLM.from_pretrained(
-        MODEL_NAME,
-        cache_dir=MODEL_DIR,
+        BASE_MODEL_NAME,
+        cache_dir=BASE_MODEL_PATH,
         dtype=torch.bfloat16,
         device_map="auto",
         trust_remote_code=True
@@ -43,7 +50,7 @@ def main() -> None:
     # --- 步骤 1: 为所有样本生成并保存中间结果 ---
     print("\n" + "="*20 + " Step 1: Generating and saving hidden states for all samples " + "="*20)
     for i in tqdm(range(num_samples), desc="Generating hidden states"):
-        sample_save_dir = os.path.join(BASE_HIDDEN_STATES_DIR, f"sample_{i}")
+        sample_save_dir = os.path.join(HIDDEN_STATES_DIR, f"sample_{i}")
         
         # if not os.path.exists(sample_save_dir) or not os.listdir(sample_save_dir):
         sample_input_ids = torch.tensor([calibration_data[i]], dtype=torch.long)
@@ -60,7 +67,7 @@ def main() -> None:
     layer_sample_counts = {layer_idx: 0 for layer_idx in layers_to_analyze}  # 记录每层成功处理的样本数
     
     for i in tqdm(range(num_samples), desc="Analyzing samples"):
-        sample_save_dir = os.path.join(BASE_HIDDEN_STATES_DIR, f"sample_{i}")
+        sample_save_dir = os.path.join(HIDDEN_STATES_DIR, f"sample_{i}")
         
         for layer_idx in layers_to_analyze:
             try:
@@ -84,7 +91,7 @@ def main() -> None:
     
     # --- 步骤 3: 计算平均相似度并保存结果 ---
     print("\n" + "="*20 + " Step 3: Computing average similarity and saving results " + "="*20)
-    results_dir = os.path.join(RESULT_DIR, "similarity_results")
+    results_dir = os.path.join(ANALYSIS_DIR, "similarity_results")
     os.makedirs(results_dir, exist_ok=True)
     
     for layer_idx, total_sim in aggregated_similarity.items():
@@ -108,14 +115,14 @@ def main() -> None:
     # --- 步骤 4: 计算专家激活频率 ---
     print("\n" + "="*20 + " Step 4: Computing expert activation frequency " + "="*20)
     
-    results_dir = os.path.join(RESULT_DIR, "activation_frequency_results")
+    results_dir = os.path.join(ANALYSIS_DIR, "activation_frequency_results")
     os.makedirs(results_dir, exist_ok=True)
 
     # 为每一层统计激活频率
     total_activation_counts = {layer_idx: torch.zeros(60, dtype=torch.long) for layer_idx in layers_to_analyze}
     
     for i in tqdm(range(num_samples), desc="Computing activation frequency"):
-        sample_save_dir = os.path.join(BASE_HIDDEN_STATES_DIR, f"sample_{i}")
+        sample_save_dir = os.path.join(HIDDEN_STATES_DIR, f"sample_{i}")
         
         for layer_idx in layers_to_analyze:
             try:
