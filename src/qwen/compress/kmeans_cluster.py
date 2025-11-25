@@ -143,7 +143,7 @@ def main():
     # TARGET_LAYERS = list(range(24))  # 要聚类的层
     # CLUSTER_N = 30  # 目标专家数量
     # CLUSTER_DIR = f"/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/kmeans_clusters_{CLUSTER_N}"
-    from ..config import (
+    from ...config import (
         SIMILARITY_RESULT_DIR,
         TARGET_LAYERS,
         CLUSTER_N,

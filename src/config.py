@@ -15,10 +15,12 @@ BASE_MODEL_PATH = os.path.join("/root/fsas/models", BASE_MODEL_NAME)
 # workspace 路径
 WORKSPACE_DIR = "/root/SMoE" # 可自定义
 
-SAMPLE_INPUT_FILE = os.path.join(WORKSPACE_DIR, "data/qwen/wikitext_calibration.json")
+DATA_CACHE_DIR = "/root/fsas/dataset/wikitext"
+
+SAMPLE_INPUT_FILE = os.path.join(WORKSPACE_DIR, "data/wikitext_calibration.json")
 
 # the root directory to save all intermediate results
-BASE_INTER_DIR = "/root/fsas/zhanghongyu/LAMoE/qwen/" # 可自定义
+BASE_INTER_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/" # 可自定义
 
 # --- 分析结果保存路径 ---
 # 包括 activation_frequency_results, kmeans_clusters_XX 
@@ -27,7 +29,7 @@ ANALYSIS_DIR = os.path.join(BASE_INTER_DIR, "analysis_results")
 
 # --- 具体中间结果路径 ---
 # 包括 router_logits_layer_0.pt, hidden_states_after_attn_layer_0.pt 等文件
-HIDDEN_STATES_DIR = os.path.join(ANALYSIS_DIR, "hidden_states_cache") 
+HIDDEN_STATES_DIR = os.path.join(BASE_INTER_DIR, "hidden_states_cache") 
 
 CLUSTER_DIR = os.path.join(ANALYSIS_DIR, f"kmeans_clusters_{CLUSTER_N}")
 FREQ_RESULT_DIR = os.path.join(ANALYSIS_DIR, "activation_frequency_results")

@@ -6,16 +6,24 @@ from transformers import AutoTokenizer, Qwen2TokenizerFast
 import random
 from tqdm import tqdm # 导入 tqdm
 
-MODEL_NAME = "Qwen/Qwen1.5-MoE-A2.7B"
-TOKENIZER_CACHE = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B"
-SAMPLE_SIZE = 128
-MAX_LENGTH = 2048
-CACHE_DIR = "/root/fsas/dataset/wikitext"
-SAVE_PATH = "/root/SMoE/data/qwen/wikitext_calibration.json"
+# BASE_MODEL_NAME = "Qwen/Qwen1.5-MoE-A2.7B"
+# BASE_MODEL_PATH = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B"
+# SAMPLE_SIZE = 128
+# MAX_LENGTH = 2048
+# DATA_CACHE_DIR = "/root/fsas/dataset/wikitext"
+# SAMPLE_INPUT_FILE = "/root/SMoE/data/wikitext_calibration.json"
+from config import (
+    BASE_MODEL_NAME,
+    BASE_MODEL_PATH,
+    SAMPLE_SIZE,
+    MAX_LENGTH,
+    DATA_CACHE_DIR,
+    SAMPLE_INPUT_FILE,
+)
 
 def main() -> None:
     # 加载 wikitext-2-raw-v1 训练集
-    ds = load_dataset("wikitext", "wikitext-2-raw-v1", split="train", cache_dir=CACHE_DIR)
+    ds = load_dataset("wikitext", "wikitext-2-raw-v1", split="train", cache_dir=DATA_CACHE_DIR)
     # print(f"Loaded {len(ds)} samples.")
 
     print("Filtering dataset by text length...")
@@ -28,7 +36,7 @@ def main() -> None:
     samples = random.sample(ds_list, SAMPLE_SIZE)
 
     # 加载分词器
-    tokenizer: Qwen2TokenizerFast = AutoTokenizer.from_pretrained(MODEL_NAME, cache_dir=TOKENIZER_CACHE)
+    tokenizer: Qwen2TokenizerFast = AutoTokenizer.from_pretrained(BASE_MODEL_NAME, cache_dir=BASE_MODEL_PATH)
 
     calibration_data = []
     for sample in tqdm(samples, desc="Processing samples"):
@@ -48,14 +56,14 @@ def main() -> None:
     print(f"Processed {len(calibration_data)} calibration samples.")
     
     # 确保保存目录存在
-    save_dir = os.path.dirname(SAVE_PATH)
+    save_dir = os.path.dirname(SAMPLE_INPUT_FILE)
     os.makedirs(save_dir, exist_ok=True)
 
     # 保存为 json 格式
-    with open(SAVE_PATH, "w") as f:
+    with open(SAMPLE_INPUT_FILE, "w") as f:
         import json
         json.dump(calibration_data, f)
-    print(f"Calibration data saved to {SAVE_PATH}.")
+    print(f"Calibration data saved to {SAMPLE_INPUT_FILE}.")
 
 if __name__ == "__main__":
     main()

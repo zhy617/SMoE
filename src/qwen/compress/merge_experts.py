@@ -516,16 +516,27 @@ def update_model_config(model_path, cluster_n) -> None:
 def main():
     """主函数：执行专家合并"""
     # 配置参数
-    CLUSTER_N = 30  # 聚类数量
-    BASE_MODEL_NAME = "Qwen/Qwen1.5-MoE-A2.7B-Chat"
-    BASE_MODEL_PATH = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B-Chat"
-    CLUSTER_DIR = f"/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/kmeans_clusters_{CLUSTER_N}"  # 聚类结果存放位置
-    FREQ_RESULT_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/activation_frequency_results"   # 激活频率存放位置
-    OUTPUT_MODEL_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/merged_models"
+    # CLUSTER_N = 30  # 聚类数量
+    # BASE_MODEL_NAME = "Qwen/Qwen1.5-MoE-A2.7B-Chat"
+    # BASE_MODEL_PATH = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B-Chat"
+    # CLUSTER_DIR = f"/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/kmeans_clusters_{CLUSTER_N}"  # 聚类结果存放位置
+    # FREQ_RESULT_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/activation_frequency_results"   # 激活频率存放位置
+    # OUTPUT_MODEL_DIR = "/root/fsas/zhanghongyu/SMoE/qwen/merged_models"
     
-    # 要合并的MoE层 
-    TARGET_LAYERS = list(range(24))
-    EXPERT_MERGING_METHOD = "svd"  # 可选: "svd" 或 "frequency"
+    # # 要合并的MoE层 
+    # TARGET_LAYERS = list(range(24))
+    # EXPERT_MERGING_METHOD = "svd"  # 可选: "svd" 或 "frequency"
+
+    from ...config import (
+        BASE_MODEL_NAME,
+        BASE_MODEL_PATH,
+        CLUSTER_DIR,
+        FREQ_RESULT_DIR,
+        OUTPUT_MODEL_DIR,
+        TARGET_LAYERS,
+        CLUSTER_N,
+        EXPERT_MERGING_METHOD,
+    )
     
     try:
         print("🚀 Starting Expert Merging Pipeline")

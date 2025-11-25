@@ -35,9 +35,16 @@ def evaluate_model_logit_entropy(
     return layer_entropy
 
 
-from ..config import (
+from ...config import (
     HIDDEN_STATES_DIR,
     TARGET_LAYERS,
     SAMPLE_SIZE,
 )
 
+# test tmp logit entropy evaluation
+if __name__ == "__main__":
+    print(HIDDEN_STATES_DIR)
+    layer_entropy = evaluate_model_logit_entropy(HIDDEN_STATES_DIR)
+    for layer, entropy in layer_entropy.items():
+        print(f"Layer {layer}: Average Logit Entropy = {entropy:.4f}")
+    

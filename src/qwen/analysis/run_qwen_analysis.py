@@ -21,7 +21,7 @@ from .direct_expert_similarity import (
 # BASE_MODEL_PATH = "/root/fsas/models/Qwen/Qwen1.5-MoE-A2.7B-Chat"
 # SAMPLE_SIZE = 128
 # MAX_LENGTH = 2048
-from ..config import (
+from ...config import (
     HIDDEN_STATES_DIR,
     ANALYSIS_DIR,
     SAMPLE_INPUT_FILE,
