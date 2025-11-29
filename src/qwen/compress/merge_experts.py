@@ -528,11 +528,11 @@ def main():
     # EXPERT_MERGING_METHOD = "svd"  # 可选: "svd" 或 "frequency"
 
     from ...config import (
-        BASE_MODEL_NAME,
-        BASE_MODEL_PATH,
-        CLUSTER_DIR,
+        MODEL_NAME as BASE_MODEL_NAME,
+        CURRENT_MODEL_PATH as BASE_MODEL_PATH,
+        KMEANS_DIR as CLUSTER_DIR,
         FREQ_RESULT_DIR,
-        OUTPUT_MODEL_DIR,
+        MERGED_SAVE_DIR as OUTPUT_MODEL_DIR,
         TARGET_LAYERS,
         CLUSTER_N,
         EXPERT_MERGING_METHOD,

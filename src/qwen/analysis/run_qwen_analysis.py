@@ -23,10 +23,10 @@ from .direct_expert_similarity import (
 # MAX_LENGTH = 2048
 from ...config import (
     HIDDEN_STATES_DIR,
-    ANALYSIS_DIR,
+    WORKSPACE_DIR as ANALYSIS_DIR,
     SAMPLE_INPUT_FILE,
-    BASE_MODEL_NAME,
-    BASE_MODEL_PATH,
+    MODEL_NAME as BASE_MODEL_NAME,
+    CURRENT_MODEL_PATH as BASE_MODEL_PATH,
 )
 
 def main() -> None:

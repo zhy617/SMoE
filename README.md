@@ -76,31 +76,32 @@ bash script/qwen/evaluate_benchmark.sh
 
 ## Structure
 ```
-/root/fsas/zhanghongyu/SMoE/  (项目根目录)
-├── data/                       # 原始数据集
+/root/fsas/zhanghongyu/SMoE/
+├── data/                                   # [数据源]
 │   └── wikitext_calibration.json
-├── base_models/                # 原始 HF 模型
-│   └── Qwen1.5-MoE-A2.7B-Chat/
-├── shared_cache/               # [关键] 存放提取的中间特征 (以此避免重复计算)
-│   └── Qwen1.5-MoE-A2.7B_wikitext_128/  (命名规则: 模型名_数据名_采样数)
-│       ├── hidden_states_layer_0.pt
-│       ├── router_logits_layer_0.pt
-│       └── activation_frequency.pt
-└── experiments/                # [核心] 具体实验流水线
-    └── exp_20251125_clustering_test/  (按 实验名 或 时间戳 分隔)
-        ├── config.json                # 记录本次实验的所有参数
-        ├── analysis/                  # 聚类与分析结果
-        │   ├── kmeans_k30/            # 聚类中心
-        │   └── similarity_matrix.pt
-        ├── checkpoints/               # [保存] 合并后的模型权重
-        │   ├── expert_svd_router_avg_k30/
-        │   └── expert_avg_router_avg_k30/
-        └── evaluation/                # [新增] 测试 Pipeline 的结果
-            ├── expert_svd_router_avg_k30/
-            │   ├── entropy_analysis.json  # 路由熵
-            │   ├── load_balance.png       # 负载均衡图
-            │   └── perplexity.log         # PPL 测试
-            └── summary_report.csv         # 所有变体的对比汇总
+│
+├── models/                                 # [模型仓库] 平铺直叙，不再嵌套
+│   ├── Qwen/                               # <--- 家族 (Namespace)
+│   │   ├── Qwen1.5-MoE-A2.7B-Chat/         # 原始模型
+│   │   ├── expert_svd_router_avg_k30/      # 合并模型 A
+│   │   └── expert_avg_router_avg_k60/      # 合并模型 B
+│   │
+│   └── Mixtral/                            # 另一个家族
+│       ├── Mixtral-8x7B-v0.1/
+│       └── expert_top2_router_avg_k30/
+│
+├── tensor_cache/                           # [中间产物] 逻辑不变，按模型名隔离
+│   ├── Qwen/
+│   │   ├── Qwen1.5-MoE..._wikitext_128/    # 原始模型的 Logits/HS
+│   │   │   └── clustering_centers/         # (仅Base有) 聚类中心
+│   │   └── expert_svd..._wikitext_128/     # 合并模型 A 的 Logits/HS
+│   │
+│   └── Mixtral/ ...
+│
+└── evaluation/                             # [分析报告]
+    ├── Qwen/
+    │   └── expert_svd_router_avg_k30/      # 该模型的评估图表
+    └── Mixtral/ ...
 ```
 
 ## GPU Memory Consumption

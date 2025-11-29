@@ -144,10 +144,10 @@ def main():
     # CLUSTER_N = 30  # 目标专家数量
     # CLUSTER_DIR = f"/root/fsas/zhanghongyu/SMoE/qwen/analysis_results/kmeans_clusters_{CLUSTER_N}"
     from ...config import (
-        SIMILARITY_RESULT_DIR,
+        SIMILARITY_DIR as SIMILARITY_RESULT_DIR,
         TARGET_LAYERS,
         CLUSTER_N,
-        CLUSTER_DIR
+        KMEANS_DIR as CLUSTER_DIR
     )
     for layer in TARGET_LAYERS:
         try:

@@ -17,13 +17,13 @@ from config import (
     BASE_MODEL_PATH,
     SAMPLE_SIZE,
     MAX_LENGTH,
-    DATA_CACHE_DIR,
+    DATASET_CACHE_DIR,
     SAMPLE_INPUT_FILE,
 )
 
 def main() -> None:
     # 加载 wikitext-2-raw-v1 训练集
-    ds = load_dataset("wikitext", "wikitext-2-raw-v1", split="train", cache_dir=DATA_CACHE_DIR)
+    ds = load_dataset("wikitext", "wikitext-2-raw-v1", split="train", cache_dir=DATASET_CACHE_DIR)
     # print(f"Loaded {len(ds)} samples.")
 
     print("Filtering dataset by text length...")
