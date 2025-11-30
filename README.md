@@ -81,6 +81,13 @@ bash script/qwen/evaluate_benchmark.sh
 bash script/qwen/calculate_logit_entropy.sh
 ```
 
+## freq coefficient of variation
+```bash
+# calculate freq coefficient of variation
+# input: ~/fsas/zhanghongyu/LAMoE/tensor_cache/Qwen/expert_svd_router_avg_k30_wikitext_128/activation_frequency_results/
+# output: ~/fsas/zhanghongyu/LAMoE/evaluation/Qwen/expert_svd_router_avg_k30/activation_cv
+bash script/qwen/calculate_freq_cv.sh
+```
 
 
 ## Structure

@@ -48,6 +48,11 @@ if __name__ == "__main__":
     output_dir = os.path.join(EVALUATE_DIR, "logit_entropy")
     os.makedirs(output_dir, exist_ok=True)
     layer_entropy = evaluate_model_logit_entropy(HIDDEN_STATES_DIR)
+
+    entropy_mean = sum(layer_entropy.values()) / len(layer_entropy) if layer_entropy else 0.0
+    print(f"\n=== Logit Entropy across layers ===")
+    print(f"Mean Logit Entropy across layers: {entropy_mean:.4f}\n")
+
     for layer, entropy in layer_entropy.items():
         print(f"Layer {layer}: Average Logit Entropy = {entropy:.4f}")
 
