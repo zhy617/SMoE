@@ -12,9 +12,10 @@ from tqdm import tqdm # 导入 tqdm
 # MAX_LENGTH = 2048
 # DATA_CACHE_DIR = "/root/fsas/dataset/wikitext"
 # SAMPLE_INPUT_FILE = "/root/SMoE/data/wikitext_calibration.json"
-from config import (
-    BASE_MODEL_NAME,
-    BASE_MODEL_PATH,
+
+from ..config import (
+    MODEL_FULL_NAME as BASE_MODEL_NAME,
+    CURRENT_MODEL_PATH as BASE_MODEL_PATH,
     SAMPLE_SIZE,
     MAX_LENGTH,
     DATASET_CACHE_DIR,

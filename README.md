@@ -76,7 +76,7 @@ bash script/qwen/evaluate_benchmark.sh
 
 ## Structure
 ```
-/root/fsas/zhanghongyu/SMoE/
+/root/fsas/zhanghongyu/LAMoE/
 ├── data/                                   # [数据源]
 │   └── wikitext_calibration.json
 │

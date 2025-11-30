@@ -16,7 +16,7 @@ ROUTER_MERGING_METHOD = "avg"
 # 2. [核心开关] 当前正在操作哪个模型？
 # =========================================================
 # 场景 A: 跑 Base 模型 (注释掉场景 B)
-CURRENT_MODEL_PATH = "/root/fsas/zhanghongyu/LAMoE/models/Qwen/Qwen1.5-MoE-A2.7B-Chat"
+CURRENT_MODEL_PATH = "/root/fsas/zhanghongyu/LAMoE/models/Qwen/Qwen1.5-MoE-A2.7B"
 
 # 场景 B: 跑 Merged 模型 (注释掉场景 A)
 # CURRENT_MODEL_PATH = f"/root/fsas/zhanghongyu/LAMoE/models/Qwen/expert_{EXPERT_MERGING_METHOD}_router_{ROUTER_MERGING_METHOD}_k{CLUSTER_N}"
@@ -27,10 +27,12 @@ FAMILY_NAME = "Qwen"    # [关键] 家族名称 (Qwen, Mixtral)
 # =========================================================
 # 提取模型文件夹名字 (例如 "Qwen1.5-MoE-A2.7B-Chat" 或 "expert_svd_router_avg_k30")
 MODEL_NAME = os.path.basename(CURRENT_MODEL_PATH.rstrip("/"))
+MODEL_FULL_NAME = f"{FAMILY_NAME}/{MODEL_NAME}" # use for huggingface loading
 
 # 项目根目录
 ROOT_DIR = "/root/fsas/zhanghongyu/LAMoE"
 DATASET_NAME = "wikitext"
+DATASET_CACHE_DIR = os.path.join(ROOT_DIR, "dataset", DATASET_NAME)
 
 # [核心] 当前模型专属的工作区 (Cache)
 # 路径: /root/.../tensor_cache/Qwen1.5-MoE-A2.7B-Chat_wikitext_128/

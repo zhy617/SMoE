@@ -1,1 +1,1 @@
-python ../src/datasets/sample_wikitext_calibration.py
+python -m src.data.sample_wikitext_calibration
