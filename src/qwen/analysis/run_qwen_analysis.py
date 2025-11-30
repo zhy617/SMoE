@@ -37,7 +37,8 @@ def main() -> None:
         cache_dir=BASE_MODEL_PATH,
         dtype=torch.bfloat16,
         device_map="auto",
-        trust_remote_code=True
+        trust_remote_code=True,
+        local_files_only=True,
     ))
 
     # --- 加载数据 ---

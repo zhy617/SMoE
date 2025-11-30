@@ -536,6 +536,7 @@ def main():
         TARGET_LAYERS,
         CLUSTER_N,
         EXPERT_MERGING_METHOD,
+        OUTPUT_MODEL_NAME,
     )
     
     try:
@@ -573,11 +574,11 @@ def main():
         )
         
         # 保存合并后的模型（不保存分词器）
-        model_name = f"qwen1.5_moe_merged_{EXPERT_MERGING_METHOD}_cluster_{CLUSTER_N}"
+        # model_name = f"qwen1.5_moe_merged_{EXPERT_MERGING_METHOD}_cluster_{CLUSTER_N}"
         saved_path = save_merged_model(
             merged_model=merged_model,
             output_dir=OUTPUT_MODEL_DIR,
-            model_name=model_name,
+            model_name=OUTPUT_MODEL_NAME,
             save_config=True,
             tokenizer=tokenizer
         )

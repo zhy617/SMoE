@@ -16,10 +16,10 @@ ROUTER_MERGING_METHOD = "avg"
 # 2. [核心开关] 当前正在操作哪个模型？
 # =========================================================
 # 场景 A: 跑 Base 模型 (注释掉场景 B)
-CURRENT_MODEL_PATH = "/root/fsas/zhanghongyu/LAMoE/models/Qwen/Qwen1.5-MoE-A2.7B"
+# CURRENT_MODEL_PATH = "/root/fsas/zhanghongyu/LAMoE/models/Qwen/Qwen1.5-MoE-A2.7B"
 
 # 场景 B: 跑 Merged 模型 (注释掉场景 A)
-# CURRENT_MODEL_PATH = f"/root/fsas/zhanghongyu/LAMoE/models/Qwen/expert_{EXPERT_MERGING_METHOD}_router_{ROUTER_MERGING_METHOD}_k{CLUSTER_N}"
+CURRENT_MODEL_PATH = f"/root/fsas/zhanghongyu/LAMoE/models/Qwen/expert_{EXPERT_MERGING_METHOD}_router_{ROUTER_MERGING_METHOD}_k{CLUSTER_N}"
 
 FAMILY_NAME = "Qwen"    # [关键] 家族名称 (Qwen, Mixtral)
 # =========================================================
@@ -74,11 +74,11 @@ ANALYSIS_RESULT_DIR = os.path.join(WORKSPACE_DIR, "final_analysis")
 # 5. [仅合并脚本用] 新模型的保存路径
 # =========================================================
 # 只有在运行 merge.py 时，你需要知道“我要存到哪去”
+OUTPUT_MODEL_NAME = f"expert_{EXPERT_MERGING_METHOD}_router_{ROUTER_MERGING_METHOD}_k{CLUSTER_N}"
 MERGED_SAVE_DIR = os.path.join(
     ROOT_DIR, 
     "models", 
     "Qwen", 
-    f"expert_{EXPERT_MERGING_METHOD}_router_{ROUTER_MERGING_METHOD}_k{CLUSTER_N}"
 )
 
 # 确保文件夹存在
