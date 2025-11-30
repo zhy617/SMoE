@@ -3,6 +3,7 @@ import os
 # =========================================================
 # 1. 实验超参数 (Hyperparameters)
 # =========================================================
+CURRENT_CLUSTER_N = 60 # use for analysis
 CLUSTER_N = 30
 SAMPLE_SIZE = 128
 MAX_LENGTH = 2048
@@ -16,10 +17,10 @@ ROUTER_MERGING_METHOD = "avg"
 # 2. [核心开关] 当前正在操作哪个模型？
 # =========================================================
 # 场景 A: 跑 Base 模型 (注释掉场景 B)
-# CURRENT_MODEL_PATH = "/root/fsas/zhanghongyu/LAMoE/models/Qwen/Qwen1.5-MoE-A2.7B"
+CURRENT_MODEL_PATH = "/root/fsas/zhanghongyu/LAMoE/models/Qwen/Qwen1.5-MoE-A2.7B"
 
 # 场景 B: 跑 Merged 模型 (注释掉场景 A)
-CURRENT_MODEL_PATH = f"/root/fsas/zhanghongyu/LAMoE/models/Qwen/expert_{EXPERT_MERGING_METHOD}_router_{ROUTER_MERGING_METHOD}_k{CLUSTER_N}"
+# CURRENT_MODEL_PATH = f"/root/fsas/zhanghongyu/LAMoE/models/Qwen/expert_{EXPERT_MERGING_METHOD}_router_{ROUTER_MERGING_METHOD}_k{CLUSTER_N}"
 
 FAMILY_NAME = "Qwen"    # [关键] 家族名称 (Qwen, Mixtral)
 # =========================================================
@@ -28,6 +29,7 @@ FAMILY_NAME = "Qwen"    # [关键] 家族名称 (Qwen, Mixtral)
 # 提取模型文件夹名字 (例如 "Qwen1.5-MoE-A2.7B-Chat" 或 "expert_svd_router_avg_k30")
 MODEL_NAME = os.path.basename(CURRENT_MODEL_PATH.rstrip("/"))
 MODEL_FULL_NAME = f"{FAMILY_NAME}/{MODEL_NAME}" # use for huggingface loading
+MODEL_FULL_DIR = CURRENT_MODEL_PATH  # use for local_files_only loading
 
 # 项目根目录
 ROOT_DIR = "/root/fsas/zhanghongyu/LAMoE"
@@ -81,9 +83,12 @@ MERGED_SAVE_DIR = os.path.join(
     "Qwen", 
 )
 
+# evaluate 文件夹
+EVALUATE_DIR = os.path.join(ROOT_DIR, "evaluation", FAMILY_NAME, MODEL_NAME)
+
 # 确保文件夹存在
 def ensure_dirs():
-    for p in [HIDDEN_STATES_DIR, FREQ_RESULT_DIR, REDUNDANCY_DIR, SIMILARITY_DIR, KMEANS_DIR, ANALYSIS_RESULT_DIR]:
+    for p in [HIDDEN_STATES_DIR, FREQ_RESULT_DIR, REDUNDANCY_DIR, SIMILARITY_DIR, KMEANS_DIR, ANALYSIS_RESULT_DIR, EVALUATE_DIR]:
         os.makedirs(p, exist_ok=True)
     # 如果是合并操作，还要创建保存目录
     os.makedirs(MERGED_SAVE_DIR, exist_ok=True)

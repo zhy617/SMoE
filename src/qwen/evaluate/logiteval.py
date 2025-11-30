@@ -13,7 +13,7 @@ def compute_logit_entropy(logits: torch.Tensor) -> torch.Tensor:
     return entropy
 
 # 逐层读取logit，计算信息熵
-# ~/fsas/zhanghongyu/SMoE/qwen/hidden_states_cache/sample_0/router_logits_layer_0.pt
+# ~/fsas/zhanghongyu/LAMoE/tensor_cache/Qwen/expert_svd_router_avg_k30_wikitext_128/hidden_states_cache/sample_0/router_logits_layer_0.pt
 # 返回每层的平均信息熵
 def evaluate_model_logit_entropy(
     logits_path: str
@@ -39,12 +39,28 @@ from ...config import (
     HIDDEN_STATES_DIR,
     TARGET_LAYERS,
     SAMPLE_SIZE,
+    EVALUATE_DIR,
 )
 
 # test tmp logit entropy evaluation
 if __name__ == "__main__":
     print(HIDDEN_STATES_DIR)
+    output_dir = os.path.join(EVALUATE_DIR, "logit_entropy")
+    os.makedirs(output_dir, exist_ok=True)
     layer_entropy = evaluate_model_logit_entropy(HIDDEN_STATES_DIR)
     for layer, entropy in layer_entropy.items():
         print(f"Layer {layer}: Average Logit Entropy = {entropy:.4f}")
+
+    # === 保存为 JSON 和 PT 文件 ===
+    # 1) JSON：便于后续脚本 / 可视化使用
+    import json
+    json_path = os.path.join(output_dir, "logit_entropy.json")
+    with open(json_path, "w") as f:
+        json.dump(layer_entropy, f, indent=2, sort_keys=True)
+    print(f"[Saved] logit entropy JSON -> {json_path}")
+
+    # 2) PT：便于用 torch.load 直接读
+    pt_path = os.path.join(output_dir, "logit_entropy.pt")
+    torch.save(layer_entropy, pt_path)
+    print(f"[Saved] logit entropy PT -> {pt_path}")
     

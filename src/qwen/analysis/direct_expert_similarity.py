@@ -5,6 +5,11 @@ from transformers.models.qwen2_moe.modeling_qwen2_moe import Qwen2MoeDecoderLaye
 from typing import List, Tuple, Dict, cast, Optional, Union
 import os
 
+from ...config import (
+    CURRENT_CLUSTER_N
+)
+
+
 def generate_and_save_hidden_states(
     model: Qwen2MoeForCausalLM,
     input_ids: torch.Tensor,
@@ -111,7 +116,7 @@ def get_expert_activation_from_saved_states(
     if isinstance(moe_block, Qwen2MoeMLP):
         raise ValueError(f"Layer {target_moe_layer_idx} is not a MoE layer.")
 
-    num_experts = len(moe_block.experts)
+    num_experts = CURRENT_CLUSTER_N
     expert_outputs: List[torch.Tensor] = []
 
     with torch.no_grad():
@@ -135,7 +140,7 @@ def calculate_expert_similarity_matrix(expert_activations: torch.Tensor) -> torc
     Returns:
         similarity_matrix: 形状为 (num_experts, num_experts) 的相似度矩阵
     """
-    num_experts = expert_activations.shape[0]
+    num_experts = CURRENT_CLUSTER_N
     batch_size, seq_len, hidden_dim = expert_activations.shape[1], expert_activations.shape[2], expert_activations.shape[3]
     
     # 将专家激活重塑为 (num_experts, m, hidden_dim)，其中 m = batch_size * seq_len
@@ -216,7 +221,7 @@ def calculate_expert_activation_frequency(
     
     # 展平为一维，统计每个专家被选中的次数
     flat_indices = top_k_indices.flatten()  # (batch_size * seq_len * top_k,)
-    num_experts = router_logits.shape[-1]
+    num_experts = CURRENT_CLUSTER_N
     
     # 统计激活频率
     activation_counts = torch.bincount(flat_indices, minlength=num_experts)

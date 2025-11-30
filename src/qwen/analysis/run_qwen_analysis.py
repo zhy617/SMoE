@@ -25,8 +25,10 @@ from ...config import (
     HIDDEN_STATES_DIR,
     WORKSPACE_DIR as ANALYSIS_DIR,
     SAMPLE_INPUT_FILE,
-    MODEL_FULL_NAME as BASE_MODEL_NAME,
+    MODEL_FULL_DIR as BASE_MODEL_NAME,
     CURRENT_MODEL_PATH as BASE_MODEL_PATH,
+    TARGET_LAYERS,
+    CURRENT_CLUSTER_N
 )
 
 def main() -> None:
@@ -39,6 +41,7 @@ def main() -> None:
         device_map="auto",
         trust_remote_code=True,
         local_files_only=True,
+
     ))
 
     # --- 加载数据 ---
@@ -61,10 +64,10 @@ def main() -> None:
     print("\n" + "="*20 + " Step 2: Analyzing all samples and calculating similarity " + "="*20)
     
     # 定义要分析的MoE层 (Qwen1.5-MoE-A2.7B的MoE层通常在奇数层)
-    layers_to_analyze = list(range(24))  # 你可以按需修改这个列表
+    layers_to_analyze = TARGET_LAYERS  # 你可以按需修改这个列表
     
     # 为每一层初始化一个累加器
-    aggregated_similarity = {layer_idx: torch.zeros(60, 60) for layer_idx in layers_to_analyze}  # Qwen1.5-MoE有60个专家
+    aggregated_similarity = {layer_idx: torch.zeros(CURRENT_CLUSTER_N, CURRENT_CLUSTER_N) for layer_idx in layers_to_analyze}  # Qwen1.5-MoE有60个专家
     layer_sample_counts = {layer_idx: 0 for layer_idx in layers_to_analyze}  # 记录每层成功处理的样本数
     
     for i in tqdm(range(num_samples), desc="Analyzing samples"):
@@ -120,7 +123,7 @@ def main() -> None:
     os.makedirs(results_dir, exist_ok=True)
 
     # 为每一层统计激活频率
-    total_activation_counts = {layer_idx: torch.zeros(60, dtype=torch.long) for layer_idx in layers_to_analyze}
+    total_activation_counts = {layer_idx: torch.zeros(CURRENT_CLUSTER_N, dtype=torch.long) for layer_idx in layers_to_analyze}
     
     for i in tqdm(range(num_samples), desc="Computing activation frequency"):
         sample_save_dir = os.path.join(HIDDEN_STATES_DIR, f"sample_{i}")

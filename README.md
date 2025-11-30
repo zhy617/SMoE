@@ -73,6 +73,15 @@ bash script/qwen/evaluate_benchmark.sh
 # change the "CLUSTER_N" in the script/code to evaluate different merged models
 ```
 
+## logit entropy
+```bash
+# calculate logit entropy
+# input: ~/fsas/zhanghongyu/LAMoE/tensor_cache/Qwen/expert_svd_router_avg_k30_wikitext_128/hidden_states_cache
+# output: ~/fsas/zhanghongyu/LAMoE/evaluation/Qwen/expert_svd_router_avg_k30/logit_entropy
+bash script/qwen/calculate_logit_entropy.sh
+```
+
+
 
 ## Structure
 ```
