@@ -89,6 +89,43 @@ bash script/qwen/calculate_logit_entropy.sh
 bash script/qwen/calculate_freq_cv.sh
 ```
 
+## Configuration
+`avg`
+```
+EXPERT_MERGING_METHOD = "svd"
+ROUTER_MERGING_METHOD = "avg"
+APPLY_LOGIT_ADJUSTMENT = False 
+MERGE_GATE_WITH_SVD = False  
+
+SAVE_DIR = "/root/fsas/zhanghongyu/LAMoE/models/Qwen/expert_svd_router_avg_k30"
+```
+
+`svd_la`
+```
+EXPERT_MERGING_METHOD = "svd"
+ROUTER_MERGING_METHOD = "svd_la"
+APPLY_LOGIT_ADJUSTMENT = True
+MERGE_GATE_WITH_SVD = True
+SAVE_DIR = "/root/fsas/zhanghongyu/LAMoE/models/Qwen/expert_svd_router_svd_la_k30"
+```
+
+`svd`
+```
+EXPERT_MERGING_METHOD = "svd"
+ROUTER_MERGING_METHOD = "svd"
+APPLY_LOGIT_ADJUSTMENT = False
+MERGE_GATE_WITH_SVD = True
+SAVE_DIR = "/root/fsas/zhanghongyu/LAMoE/models/Qwen/expert_svd_router_svd_k30"
+```
+
+`avg_la`
+```
+EXPERT_MERGING_METHOD = "svd"
+ROUTER_MERGING_METHOD = "avg_la"
+APPLY_LOGIT_ADJUSTMENT = True
+MERGE_GATE_WITH_SVD = False
+SAVE_DIR = "/root/fsas/zhanghongyu/LAMoE/models/Qwen/expert_svd_router_avg_la_k30"
+```
 
 ## Structure
 ```
