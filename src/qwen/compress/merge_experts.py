@@ -481,6 +481,7 @@ def save_merged_model(
                 "total_parameters": sum(p.numel() for p in merged_model.parameters()),
                 "trainable_parameters": sum(p.numel() for p in merged_model.parameters() if p.requires_grad),
                 "moe_layers_info": {},
+                "apply_logit_adjustment": apply_logit_adjustment,
             }
             
             # 统计每层的专家数量
