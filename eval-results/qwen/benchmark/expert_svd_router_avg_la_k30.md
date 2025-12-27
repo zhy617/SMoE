@@ -1,10 +1,10 @@
 |                 Tasks                 |Version|Filter|n-shot| Metric |   |Value |   |Stderr|
 |---------------------------------------|------:|------|-----:|--------|---|-----:|---|-----:|
-|arc_challenge                          |      1|none  |     0|acc     |↑  |0.2260|±  |0.0132|
-|                                       |       |none  |     0|acc_norm|↑  |0.2480|±  |0.0137|
-|arc_easy                               |      1|none  |     0|acc     |↑  |0.4260|±  |0.0156|
-|                                       |       |none  |     0|acc_norm|↑  |0.4300|±  |0.0157|
-|mmlu                                   |      2|none  |      |acc     |↑  |0.2290|±  |0.0036|
+|arc_challenge                          |      1|none  |     0|acc     |↑  |0.2220|±  |0.0131|
+|                                       |       |none  |     0|acc_norm|↑  |0.2490|±  |0.0137|
+|arc_easy                               |      1|none  |     0|acc     |↑  |0.4240|±  |0.0156|
+|                                       |       |none  |     0|acc_norm|↑  |0.4280|±  |0.0157|
+|mmlu                                   |      2|none  |      |acc     |↑  |0.2289|±  |0.0036|
 | - humanities                          |      2|none  |      |acc     |↑  |0.2414|±  |0.0066|
 |  - formal_logic                       |      1|none  |     0|acc     |↑  |0.2698|±  |0.0397|
 |  - high_school_european_history       |      1|none  |     0|acc     |↑  |0.2182|±  |0.0323|
@@ -33,13 +33,13 @@
 |  - professional_accounting            |      1|none  |     0|acc     |↑  |0.2340|±  |0.0253|
 |  - professional_medicine              |      1|none  |     0|acc     |↑  |0.1838|±  |0.0235|
 |  - virology                           |      1|none  |     0|acc     |↑  |0.2831|±  |0.0351|
-| - social sciences                     |      2|none  |      |acc     |↑  |0.2174|±  |0.0074|
+| - social sciences                     |      2|none  |      |acc     |↑  |0.2171|±  |0.0074|
 |  - econometrics                       |      1|none  |     0|acc     |↑  |0.2368|±  |0.0400|
 |  - high_school_geography              |      1|none  |     0|acc     |↑  |0.1768|±  |0.0272|
 |  - high_school_government_and_politics|      1|none  |     0|acc     |↑  |0.1969|±  |0.0287|
 |  - high_school_macroeconomics         |      1|none  |     0|acc     |↑  |0.2026|±  |0.0204|
 |  - high_school_microeconomics         |      1|none  |     0|acc     |↑  |0.2059|±  |0.0263|
-|  - high_school_psychology             |      1|none  |     0|acc     |↑  |0.1963|±  |0.0170|
+|  - high_school_psychology             |      1|none  |     0|acc     |↑  |0.1945|±  |0.0170|
 |  - human_sexuality                    |      1|none  |     0|acc     |↑  |0.2595|±  |0.0384|
 |  - professional_psychology            |      1|none  |     0|acc     |↑  |0.2500|±  |0.0175|
 |  - public_relations                   |      1|none  |     0|acc     |↑  |0.2182|±  |0.0396|
@@ -66,12 +66,12 @@
 |  - high_school_physics                |      1|none  |     0|acc     |↑  |0.1987|±  |0.0326|
 |  - high_school_statistics             |      1|none  |     0|acc     |↑  |0.1528|±  |0.0245|
 |  - machine_learning                   |      1|none  |     0|acc     |↑  |0.3125|±  |0.0440|
-|winogrande                             |      1|none  |     0|acc     |↑  |0.5320|±  |0.0158|
+|winogrande                             |      1|none  |     0|acc     |↑  |0.5280|±  |0.0158|
 
 |      Groups      |Version|Filter|n-shot|Metric|   |Value |   |Stderr|
 |------------------|------:|------|------|------|---|-----:|---|-----:|
-|mmlu              |      2|none  |      |acc   |↑  |0.2290|±  |0.0036|
+|mmlu              |      2|none  |      |acc   |↑  |0.2289|±  |0.0036|
 | - humanities     |      2|none  |      |acc   |↑  |0.2414|±  |0.0066|
 | - other          |      2|none  |      |acc   |↑  |0.2401|±  |0.0076|
-| - social sciences|      2|none  |      |acc   |↑  |0.2174|±  |0.0074|
+| - social sciences|      2|none  |      |acc   |↑  |0.2171|±  |0.0074|
 | - stem           |      2|none  |      |acc   |↑  |0.2128|±  |0.0073|

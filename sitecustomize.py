@@ -1,6 +1,7 @@
 # filepath: /root/LAMoE/sitecustomize.py
 import torch
 from torch import nn
+# from transformers.models.qwen2_moe
 
 try:
     from transformers.models.qwen2_moe.modeling_qwen2_moe import Qwen2MoeSparseMoeBlock
@@ -14,7 +15,7 @@ if Qwen2MoeSparseMoeBlock is not None:
         _orig_init(self, *args, **kwargs)
         cfg = getattr(self, "config", None)
         need_bias = getattr(cfg, "apply_logit_adjustment", False)
-        gate = getattr(self.mlp, "gate", None)
+        gate = getattr(self, "gate", None)
         if need_bias and gate is not None and getattr(gate, "bias", None) is None:
             gate.register_parameter(
                 "bias",
