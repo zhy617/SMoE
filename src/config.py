@@ -11,9 +11,9 @@ TARGET_LAYERS = list(range(24))  # 要聚类的层
 
 # 合并参数 (用于生成新模型名字)
 EXPERT_MERGING_METHOD = "svd"
-ROUTER_MERGING_METHOD = "avg_la"
+ROUTER_MERGING_METHOD = "svd_la"
 APPLY_LOGIT_ADJUSTMENT = True
-MERGE_GATE_WITH_SVD = False
+MERGE_GATE_WITH_SVD = True
 
 # =========================================================
 # 2. [核心开关] 当前正在操作哪个模型？

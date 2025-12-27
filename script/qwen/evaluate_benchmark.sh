@@ -4,12 +4,12 @@
 # 设置环境变量以使用本地缓存和镜像
 export HF_ENDPOINT=https://hf-mirror.com
 
-export HF_TOKEN="your_huggingface_token_here"  # 请替换为你的Hugging Face访问令牌
-
-huggingface-cli login --token $HF_TOKEN
-
 # 获取脚本启动时的绝对路径
 SCRIPT_DIR=$(pwd)
+
+# export HF_TOKEN="*"  # 请替换为你的Hugging Face访问令牌
+source $SCRIPT_DIR/secrets/hf_token.sh
+huggingface-cli login --token $HF_TOKEN
 
 LOG_DIR="$SCRIPT_DIR/script/qwen/logs"
 mkdir -p $LOG_DIR
