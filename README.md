@@ -106,6 +106,7 @@ EXPERT_MERGING_METHOD = "svd"
 ROUTER_MERGING_METHOD = "svd_la"
 APPLY_LOGIT_ADJUSTMENT = True
 MERGE_GATE_WITH_SVD = True
+
 SAVE_DIR = "/root/fsas/zhanghongyu/LAMoE/models/Qwen/expert_svd_router_svd_la_k30"
 ```
 
@@ -115,6 +116,7 @@ EXPERT_MERGING_METHOD = "svd"
 ROUTER_MERGING_METHOD = "svd"
 APPLY_LOGIT_ADJUSTMENT = False
 MERGE_GATE_WITH_SVD = True
+
 SAVE_DIR = "/root/fsas/zhanghongyu/LAMoE/models/Qwen/expert_svd_router_svd_k30"
 ```
 
@@ -124,6 +126,7 @@ EXPERT_MERGING_METHOD = "svd"
 ROUTER_MERGING_METHOD = "avg_la"
 APPLY_LOGIT_ADJUSTMENT = True
 MERGE_GATE_WITH_SVD = False
+
 SAVE_DIR = "/root/fsas/zhanghongyu/LAMoE/models/Qwen/expert_svd_router_avg_la_k30"
 ```
 
