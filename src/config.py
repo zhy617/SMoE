@@ -4,16 +4,17 @@ import os
 # 1. 实验超参数 (Hyperparameters)
 # =========================================================
 CURRENT_CLUSTER_N = 60 # use for analysis
-CLUSTER_N = 30
+CLUSTER_N = 45
 SAMPLE_SIZE = 128
 MAX_LENGTH = 2048
 TARGET_LAYERS = list(range(24))  # 要聚类的层
 
 # 合并参数 (用于生成新模型名字)
 EXPERT_MERGING_METHOD = "svd"
-ROUTER_MERGING_METHOD = "svd_la"
+ROUTER_MERGING_METHOD = "avg_la"
 APPLY_LOGIT_ADJUSTMENT = True
 MERGE_GATE_WITH_SVD = True
+TAU_FOR_MERGED_MODEL = 2.06
 
 # =========================================================
 # 2. [核心开关] 当前正在操作哪个模型？

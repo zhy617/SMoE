@@ -291,7 +291,7 @@ def merge_experts_in_moe_layer(
             eps = 1e-12
             bias_tensor = torch.clamp(bias_tensor, min=eps)
             # 使用自然对数 ln(f_k)
-            bias_tensor = torch.log(bias_tensor)
+            bias_tensor = torch.log(bias_tensor) * TAU_FOR_MERGED_MODEL
             # 将 bias 加入 gate.bias (o_k + ln f_k)
             merged_moe_layer.gate.bias.data.copy_(bias_tensor)
     
@@ -582,6 +582,7 @@ from ...config import (
         OUTPUT_MODEL_NAME,
         MERGE_GATE_WITH_SVD as merge_gate_with_svd,
         APPLY_LOGIT_ADJUSTMENT as apply_logit_adjustment,
+        TAU_FOR_MERGED_MODEL,
     )
 
 def main():

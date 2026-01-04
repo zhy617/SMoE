@@ -35,8 +35,7 @@ def main() -> None:
     # ... 加载模型和数据 ...
     print("Loading model...")
     model = cast(Qwen2MoeForCausalLM, AutoModelForCausalLM.from_pretrained(
-        BASE_MODEL_NAME,
-        cache_dir=BASE_MODEL_PATH,
+        BASE_MODEL_PATH,
         dtype=torch.bfloat16,
         device_map="auto",
         trust_remote_code=True,
